@@ -1,0 +1,11 @@
+{
+  "name": "magic-string-wasm",
+  "version": "0.0.0",
+  "main": "./pkg/magic_string_wasm.js",
+  "module": "./pkg/magic_string_wasm.js",
+  "typings": "./pkg/magic_string_wasm.d.ts",
+  "scripts": {
+    "build": "wasm-pack build --release --target web",
+    "test": "wasm-pack test --headless --chrome"
+  }
+}

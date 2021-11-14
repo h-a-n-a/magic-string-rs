@@ -1,0 +1,7 @@
+{
+  "name": "wasm-demo",
+  "private": true,
+  "scripts": {
+    "serve": "pnpx http-server"
+  }
+}
