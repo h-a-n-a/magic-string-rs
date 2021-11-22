@@ -1,9 +1,13 @@
 [package]
 authors = ["h-a-n-a <andywangsy@gmail.com>"]
 name = "magic_string"
-version = "0.1.0"
+description = "magic string"
+version = "0.0.0"
 edition = "2018"
+license = "MIT"
+repository = "https://github.com/h-a-n-a/magic-string-rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+parcel_sourcemap = "2.0.0"

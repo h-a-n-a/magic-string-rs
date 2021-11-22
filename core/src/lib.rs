@@ -1,3 +1,6 @@
-pub fn create() {
-    println!("magic string");
-}
+pub mod magic_string;
+pub mod chunk;
+
+pub use crate::magic_string::{
+    MagicString
+};
