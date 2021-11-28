@@ -1,6 +1,6 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc, string::ToString};
 
-use crate::chunk::Chunk;
+use crate::{chunk::Chunk, utils::locator};
 
 #[derive(Debug)]
 pub struct MagicString {

@@ -1,3 +1,5 @@
+mod utils;
+
 pub mod chunk;
 pub mod magic_string;
 pub mod source_map;
