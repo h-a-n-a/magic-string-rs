@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Chunk {
   pub start: usize,
   pub end: usize,

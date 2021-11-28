@@ -15,11 +15,17 @@ pub struct MagicString {
   chunk_by_end: HashMap<usize, Rc<RefCell<Chunk>>>,
 
   last_searched_chunk: Rc<RefCell<Chunk>>,
+  first_chunk: Rc<RefCell<Chunk>>,
+  last_chunk: Rc<RefCell<Chunk>>,
 }
 
 impl MagicString {
   pub fn new(str: &str) -> MagicString {
-    let original_chunk = Chunk::new(0usize, str.len(), String::from(str));
+    let original_chunk = Rc::new(RefCell::new(Chunk::new(
+      0usize,
+      str.len(),
+      String::from(str),
+    )));
 
     MagicString {
       original_str: String::from(str),
@@ -30,7 +36,9 @@ impl MagicString {
       chunk_by_start: HashMap::new(),
       chunk_by_end: HashMap::new(),
 
-      last_searched_chunk: Rc::new(RefCell::new(original_chunk)),
+      first_chunk: Rc::clone(&original_chunk),
+      last_chunk: Rc::clone(&original_chunk),
+      last_searched_chunk: Rc::clone(&original_chunk),
     }
   }
 
@@ -62,9 +70,17 @@ impl MagicString {
     todo!()
   }
 
-  fn _split(&mut self, index: usize) -> Option<Rc<RefCell<Chunk>>> {
+  pub fn generate_decoded_map(&mut self) -> Result<&mut Self, ()> {
+    todo!()
+  }
+
+  pub fn generate_map(&mut self) -> Result<&mut Self, ()> {
+    todo!()
+  }
+
+  fn _split(&mut self, index: usize) -> Result<(), ()> {
     if self.chunk_by_end.contains_key(&index) || self.chunk_by_start.contains_key(&index) {
-      None
+      Ok(())
     } else {
       let chunk = Rc::clone(&self.last_searched_chunk);
 
@@ -85,16 +101,28 @@ impl MagicString {
         };
       }
 
-      None
+      Ok(())
     }
   }
 
-  fn _split_chunk(
-    &mut self,
-    chunk: Rc<RefCell<Chunk>>,
-    index: usize,
-  ) -> Option<Rc<RefCell<Chunk>>> {
-    todo!()
+  fn _split_chunk(&mut self, chunk: Rc<RefCell<Chunk>>, index: usize) -> Result<(), ()> {
+    let new_chunk = Rc::new(RefCell::new(chunk.borrow_mut().split(index)?));
+
+    let new_chunk_original = new_chunk.borrow();
+    self.chunk_by_end.insert(index, Rc::clone(&chunk));
+
+    self.chunk_by_start.insert(index, Rc::clone(&new_chunk));
+    self
+      .chunk_by_end
+      .insert(new_chunk_original.end, Rc::clone(&new_chunk));
+
+    if self.last_chunk == chunk {
+      self.last_chunk = Rc::clone(&new_chunk);
+    }
+
+    self.last_searched_chunk = Rc::clone(&chunk);
+
+    Ok(())
   }
 }
 
