@@ -21,15 +21,12 @@ pub struct MagicString {
 
 impl MagicString {
   pub fn new(str: &str) -> MagicString {
-    let original_chunk = Rc::new(RefCell::new(Chunk::new(
-      0usize,
-      str.len(),
-      String::from(str),
-    )));
+    let original_chunk = Rc::new(RefCell::new(Chunk::new(0usize, str.len(), str)));
 
     MagicString {
       original_str: String::from(str),
 
+      // prepends and appends are followed with current instance or chunk
       intro: String::from(""),
       outro: String::from(""),
 
@@ -71,6 +68,16 @@ impl MagicString {
   }
 
   pub fn generate_decoded_map(&mut self) -> Result<&mut Self, ()> {
+    use crate::mapping::Mapping;
+
+    static source_index: usize = 0;
+
+    let mut map = Mapping::new();
+
+    map.advance(self.intro.as_str());
+
+    self.first_chunk.borrow().each_next(|chunk| {});
+
     todo!()
   }
 
