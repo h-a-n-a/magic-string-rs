@@ -1,8 +1,10 @@
 mod mapping;
 mod utils;
 
-pub mod chunk;
-pub mod magic_string;
-pub mod source_map;
+mod chunk;
+mod source_map;
 
-pub use crate::magic_string::{Error, MagicString, Result};
+pub mod magic_string;
+pub mod result;
+pub use crate::magic_string::MagicString;
+pub use crate::result::{Error, MagicStringErrorType, Result};

@@ -1,38 +1,9 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc, result, string::ToString};
+use std::{cell::RefCell, collections::HashMap, rc::Rc, string::ToString};
 
+use crate::result::Result;
 use crate::{chunk::Chunk, mapping::Mapping, source_map::SourceMap, utils::locator::Locator};
 
-#[derive(Debug)]
-pub enum MagicStringErrorType {
-  VLQEncodingError,
-  UTF8EncodingError,
-}
-
-#[derive(Debug)]
-pub struct Error {
-  pub error_type: MagicStringErrorType,
-  pub reason: Option<String>,
-}
-
-impl Error {
-  pub fn new(error_type: MagicStringErrorType) -> Self {
-    Self {
-      error_type,
-      reason: None,
-    }
-  }
-
-  pub fn new_with_reason(error_type: MagicStringErrorType, reason: &str) -> Self {
-    Self {
-      error_type,
-      reason: Some(String::from(reason)),
-    }
-  }
-}
-
-pub type Result<T = ()> = result::Result<T, Error>;
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MagicString {
   pub(crate) original_str: String,
   pub(crate) original_str_locator: Locator,
@@ -138,9 +109,7 @@ impl MagicString {
 
     map.advance(self.intro.as_str());
 
-    let first_chunk = self.first_chunk.borrow();
-
-    first_chunk.each_next(|chunk| {
+    Chunk::each_next(Rc::clone(&self.first_chunk), |chunk| {
       let loc = locator.locate(chunk.borrow().start);
       map.add_unedited_chunk(Rc::clone(&chunk), loc);
     });
@@ -210,7 +179,7 @@ impl ToString for MagicString {
   fn to_string(&self) -> String {
     let mut str = String::from(self.intro.to_owned());
 
-    self.first_chunk.borrow().each_next(|chunk| {
+    Chunk::each_next(Rc::clone(&self.first_chunk), |chunk| {
       let chunk = chunk.borrow();
       str = format!("{}{}{}{}", str, chunk.intro, chunk.content, chunk.outro);
     });

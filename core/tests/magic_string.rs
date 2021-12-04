@@ -1,37 +1,31 @@
 // tests are copied from `magic-string`: https://github.com/Rich-Harris/magic-string/blob/master/test/MagicString.js
 
 #[cfg(test)]
-mod pend {
+mod append_prepend {
   use magic_string::{MagicString, Result};
 
   #[test]
-  fn should_prepend_append() -> Result {
-    let mut ms = MagicString::new("abc\ndef\ng");
+  fn should_append_and_prepend_contents() -> Result {
+    let mut ms = MagicString::new("AbcdefghijkL");
 
-    ms.append("123")?.prepend("456")?;
+    ms.prepend("xyz")?;
+    ms.append("xyz")?;
+    ms.append("opq")?;
+    ms.prepend("opq")?;
 
-    println!("{:#?}", ms.generate_map().unwrap());
-
-    assert_eq!(ms.to_string(), "456abc\ndef\ng123");
-    assert_eq!(ms.generate_map().unwrap().mappings, "GAAA;AACA;AACA");
+    assert_eq!(ms.to_string(), "xyzopqAbcdefghijkLxyzopq");
+    assert_eq!(ms.generate_map().unwrap().mappings, "MAAA");
 
     Ok(())
   }
 
   #[test]
-  fn should_append_left_right() -> Result {
-    let mut ms = MagicString::new("abc\ndef\ng");
+  fn should_do_chaining() -> Result {
+    let mut ms = MagicString::new("123");
 
-    ms.append_left(5, "123")?
-      .prepend_left(6, "wu\nwu")?
-      .append_right(8, "456")?
-      .prepend_right(9, "hihi")?;
+    ms.prepend("9")?.append("8")?.append("7")?.prepend("6")?;
 
-    println!("{:#?}", ms.generate_map().unwrap());
-    println!("{:#?}", ms.generate_decoded_map());
-    println!("{}", ms.to_string());
-    // assert_eq!(ms.to_string(), "abc\nd123ef\n456g");
-    // assert_eq!(ms.generate_map().unwrap().mappings, "AAAA;AACA,IAAC;GACD");
+    assert_eq!(ms.to_string(), "9612387");
 
     Ok(())
   }

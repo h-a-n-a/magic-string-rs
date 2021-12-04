@@ -1,5 +1,5 @@
 pub mod locator {
-  #[derive(Debug)]
+  #[derive(Debug, Clone)]
   pub struct Locator {
     original_lines: Vec<String>,
     line_offsets: Vec<usize>,

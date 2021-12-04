@@ -50,14 +50,20 @@ impl Chunk {
     self.intro = format!("{}{}", content, self.intro);
   }
 
-  pub fn each_next<F>(&self, mut f: F)
+  pub fn each_next<F>(chunk: Rc<RefCell<Chunk>>, mut f: F)
   where
     F: FnMut(Rc<RefCell<Chunk>>) -> (),
   {
-    let mut curr = Some(Rc::new(RefCell::new((*self).clone())));
+    let mut curr = Some(chunk);
     while let Some(value) = curr {
       f(Rc::clone(&value));
-      curr = value.borrow().next.clone();
+      curr = {
+        if let Some(ref c) = value.borrow().next {
+          Some(Rc::clone(c))
+        } else {
+          None
+        }
+      };
     }
   }
 

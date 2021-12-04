@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use vlq;
 
 use crate::chunk::Chunk;
-use crate::magic_string::{Error, MagicStringErrorType, Result};
+use crate::result::{Error, MagicStringErrorType, Result};
 
 static SOURCE_INDEX: u8 = 0;
 
@@ -136,7 +136,6 @@ impl Mapping {
   // generate encoded mappings, mappings are encoded relatively
   pub fn get_encoded_mappings(&mut self) -> Result<String> {
     let decoded_mappings = self.get_decoded_mappings();
-
     let mut encoded_mappings: Vec<String> = vec![];
 
     for line in decoded_mappings.iter() {
@@ -147,9 +146,8 @@ impl Mapping {
 
         for item in segment.iter() {
           let mut vlq_output: Vec<u8> = vec![];
-          let encode_result = vlq::encode(item.to_owned(), &mut vlq_output);
 
-          match encode_result {
+          match vlq::encode(item.to_owned(), &mut vlq_output) {
             Err(e) => {
               return Err(Error::new_with_reason(
                 MagicStringErrorType::VLQEncodingError,
@@ -159,9 +157,7 @@ impl Mapping {
             _ => (),
           };
 
-          let stringify_result = String::from_utf8(vlq_output);
-
-          match stringify_result {
+          match String::from_utf8(vlq_output) {
             Err(_) => {
               return Err(Error::new(MagicStringErrorType::UTF8EncodingError));
             }
@@ -175,7 +171,9 @@ impl Mapping {
       encoded_mappings.push(line_str.join(","));
     }
 
-    Ok(encoded_mappings.join(";"))
+    let encoded_mappings_str = encoded_mappings.join(";");
+
+    Ok(encoded_mappings_str)
   }
 }
 
