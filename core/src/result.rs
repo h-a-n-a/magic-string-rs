@@ -4,6 +4,7 @@ use std::result;
 pub enum MagicStringErrorType {
   VLQEncodingError,
   UTF8EncodingError,
+  JSONSerializationError,
 }
 
 #[derive(Debug)]

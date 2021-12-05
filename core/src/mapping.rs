@@ -134,8 +134,7 @@ impl Mapping {
   }
 
   // generate encoded mappings, mappings are encoded relatively
-  pub fn get_encoded_mappings(&mut self) -> Result<String> {
-    let decoded_mappings = self.get_decoded_mappings();
+  pub fn generate_encoded_mappings(decoded_mappings: &Mappings) -> Result<String> {
     let mut encoded_mappings: Vec<String> = vec![];
 
     for line in decoded_mappings.iter() {

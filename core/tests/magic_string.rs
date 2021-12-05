@@ -2,7 +2,7 @@
 
 #[cfg(test)]
 mod append_prepend {
-  use magic_string::{MagicString, Result};
+  use magic_string::{GenerateDecodedMapOptions, MagicString, Result};
 
   #[test]
   fn should_append_and_prepend_contents() -> Result {
@@ -14,7 +14,11 @@ mod append_prepend {
     ms.prepend("opq")?;
 
     assert_eq!(ms.to_string(), "xyzopqAbcdefghijkLxyzopq");
-    assert_eq!(ms.generate_map().unwrap().mappings, "MAAA");
+    assert_eq!(
+      ms.generate_map(GenerateDecodedMapOptions::default())?
+        .mappings,
+      "MAAA"
+    );
 
     Ok(())
   }

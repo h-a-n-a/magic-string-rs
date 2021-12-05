@@ -2,7 +2,7 @@
 authors = ["h-a-n-a <andywangsy@gmail.com>"]
 name = "magic_string"
 description = "magic string"
-version = "0.0.0"
+version = "0.1.0"
 edition = "2018"
 license = "MIT"
 repository = "https://github.com/h-a-n-a/magic-string-rs"
@@ -11,3 +11,6 @@ repository = "https://github.com/h-a-n-a/magic-string-rs"
 
 [dependencies]
 vlq = "0.5.1"
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+base64 = "0.13"

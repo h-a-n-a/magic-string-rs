@@ -1,7 +1,29 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc, string::ToString};
 
-use crate::result::Result;
-use crate::{chunk::Chunk, mapping::Mapping, source_map::SourceMap, utils::locator::Locator};
+use crate::{
+  chunk::Chunk,
+  mapping::{Mapping, Mappings},
+  result::Result,
+  source_map::SourceMap,
+  utils::locator::Locator,
+};
+
+#[derive(Default)]
+pub struct GenerateDecodedMapOptions {
+  pub file: Option<String>,
+  pub source_root: Option<String>,
+  pub source: Option<String>,
+  pub include_content: bool,
+}
+
+pub struct DecodedMap {
+  pub file: Option<String>,
+  pub sources: Vec<Option<String>>,
+  pub source_root: Option<String>,
+  pub sources_content: Vec<Option<String>>,
+  pub names: Vec<String>,
+  pub mappings: Mappings,
+}
 
 #[derive(Debug, Clone)]
 pub struct MagicString {
@@ -29,11 +51,11 @@ impl MagicString {
       original_str: String::from(str),
 
       // prepends and appends are followed with current instance or chunk
-      intro: String::from(""),
-      outro: String::from(""),
+      intro: String::default(),
+      outro: String::default(),
 
-      chunk_by_start: HashMap::new(),
-      chunk_by_end: HashMap::new(),
+      chunk_by_start: HashMap::default(),
+      chunk_by_end: HashMap::default(),
 
       first_chunk: Rc::clone(&original_chunk),
       last_chunk: Rc::clone(&original_chunk),
@@ -103,7 +125,7 @@ impl MagicString {
     Ok(self)
   }
 
-  pub fn generate_decoded_map(&mut self) -> Result<Mapping> {
+  pub fn generate_decoded_map(&mut self, options: GenerateDecodedMapOptions) -> Result<DecodedMap> {
     let mut map = Mapping::new();
     let locator = &self.original_str_locator;
 
@@ -116,16 +138,25 @@ impl MagicString {
 
     map.advance(self.outro.as_str());
 
-    Ok(map)
+    Ok(DecodedMap {
+      file: options.file.to_owned(),
+      mappings: map.get_decoded_mappings(),
+      source_root: options.source_root.to_owned(),
+      sources: vec![options.source],
+      names: vec![],
+      sources_content: {
+        if options.include_content {
+          vec![Some(self.original_str.to_owned())]
+        } else {
+          vec![None]
+        }
+      },
+    })
   }
 
-  pub fn generate_map(&mut self) -> Result<SourceMap> {
-    Ok(SourceMap::new(
-      self
-        .generate_decoded_map()?
-        .get_encoded_mappings()?
-        .as_str(),
-    ))
+  pub fn generate_map(&mut self, options: GenerateDecodedMapOptions) -> Result<SourceMap> {
+    let decoded_map = self.generate_decoded_map(options)?;
+    Ok(SourceMap::new_from_decoded(decoded_map)?)
   }
 
   fn _split_at_index(&mut self, index: usize) {
