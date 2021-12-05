@@ -11,12 +11,12 @@ pub type Segment = Vec<i64>;
 pub type Line = Vec<Segment>;
 pub type Mappings = Vec<Line>;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct Mapping {
-  pub(crate) generated_code_line: usize,
-  pub(crate) generated_code_column: usize,
+  generated_code_line: usize,
+  generated_code_column: usize,
 
-  pub(crate) absolute_mappings: Mappings,
+  absolute_mappings: Mappings,
 }
 
 impl Mapping {

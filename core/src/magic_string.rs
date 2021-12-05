@@ -16,6 +16,7 @@ pub struct GenerateDecodedMapOptions {
   pub include_content: bool,
 }
 
+#[derive(Debug)]
 pub struct DecodedMap {
   pub file: Option<String>,
   pub sources: Vec<Option<String>>,
@@ -27,19 +28,19 @@ pub struct DecodedMap {
 
 #[derive(Debug, Clone)]
 pub struct MagicString {
-  pub(crate) original_str: String,
-  pub(crate) original_str_locator: Locator,
+  original_str: String,
+  original_str_locator: Locator,
 
   // prefix
-  pub(crate) intro: String,
+  intro: String,
   // suffix
-  pub(crate) outro: String,
+  outro: String,
 
   chunk_by_start: HashMap<usize, Rc<RefCell<Chunk>>>,
   chunk_by_end: HashMap<usize, Rc<RefCell<Chunk>>>,
 
   last_searched_chunk: Rc<RefCell<Chunk>>,
-  pub first_chunk: Rc<RefCell<Chunk>>,
+  first_chunk: Rc<RefCell<Chunk>>,
   last_chunk: Rc<RefCell<Chunk>>,
 }
 

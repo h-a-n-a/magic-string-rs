@@ -8,7 +8,7 @@ use crate::result::{Error, MagicStringErrorType, Result};
 // current specification version
 static VERSION: u8 = 3;
 
-#[derive(Serialize, Debug)]
+#[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SourceMap {
   pub version: u8,
