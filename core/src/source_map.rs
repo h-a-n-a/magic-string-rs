@@ -35,7 +35,7 @@ impl SourceMap {
       file,
       names,
       sources_content,
-      source_root: source_root.to_owned(),
+      source_root,
       sources,
     }
   }
