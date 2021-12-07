@@ -19,5 +19,7 @@ Cargo.lock
 node_modules
 pnpm-lock.yaml
 .pnpm-debug.log
+dist
 
+# Node addon
 *.node

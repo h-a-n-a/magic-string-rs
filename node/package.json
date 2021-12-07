@@ -1,11 +1,11 @@
 {
-  "name": "magic-string-node",
+  "name": "magic-string-rs",
   "version": "0.0.0",
   "description": "rusty magic-string",
   "main": "index.js",
   "license": "MIT",
   "napi": {
-    "name": "magic-string-node",
+    "name": "magic-string-rs",
     "triples": {
       "defaults": true,
       "additional": [
@@ -14,7 +14,6 @@
         "i686-pc-windows-msvc",
         "armv7-unknown-linux-gnueabihf",
         "aarch64-apple-darwin",
-        "aarch64-linux-android",
         "x86_64-unknown-freebsd",
         "aarch64-unknown-linux-musl",
         "aarch64-pc-windows-msvc"
@@ -33,6 +32,7 @@
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
     "prepublishOnly": "napi prepublish -t npm",
+    "test": "echo test",
     "version": "napi version"
   },
   "devDependencies": {
