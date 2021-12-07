@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use vlq;
 
 use crate::chunk::Chunk;
-use crate::result::{Error, MagicStringErrorType, Result};
+use crate::result::Result;
 
 static SOURCE_INDEX: u8 = 0;
 
@@ -13,8 +13,8 @@ pub type Mappings = Vec<Line>;
 
 #[derive(Debug)]
 pub struct Mapping {
-  generated_code_line: usize,
-  generated_code_column: usize,
+  generated_code_line: u32,
+  generated_code_column: u32,
 
   absolute_mappings: Mappings,
 }
@@ -34,7 +34,7 @@ impl Mapping {
   pub fn add_unedited_chunk(
     &mut self,
     chunk: Rc<RefCell<Chunk>>,
-    (original_line, original_column): (usize, usize),
+    (original_line, original_column): (u32, u32),
   ) {
     let mut original_line = original_line as i64;
     let original_column = original_column as i64;
@@ -55,7 +55,10 @@ impl Mapping {
         original_column,
       ];
 
-      if let Some(line) = self.absolute_mappings.get_mut(self.generated_code_line) {
+      if let Some(line) = self
+        .absolute_mappings
+        .get_mut(self.generated_code_line as usize)
+      {
         line.push(segment)
       } else {
         self.absolute_mappings.push(vec![segment])
@@ -70,7 +73,7 @@ impl Mapping {
       } else {
         // We are currently at the last piece, this is the next starting piece.
         // So we have to set the next starting column for later use.
-        self.generated_code_column += s.len();
+        self.generated_code_column += s.len() as u32;
       }
     }
 
@@ -88,10 +91,10 @@ impl Mapping {
       self.generated_code_column = 0;
     }
 
-    self.generated_code_line += lines.len() - 1;
+    self.generated_code_line += (lines.len() - 1) as u32;
 
     // save starting column for later use
-    self.generated_code_column += lines.last().unwrap().len();
+    self.generated_code_column += lines.last().unwrap().len() as u32;
   }
 
   // absolute to relative

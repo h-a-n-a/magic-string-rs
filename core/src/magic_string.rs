@@ -8,7 +8,7 @@ use crate::{
   utils::locator::Locator,
 };
 
-#[derive(Default)]
+#[derive(Debug, Default, Clone)]
 pub struct GenerateDecodedMapOptions {
   pub file: Option<String>,
   pub source_root: Option<String>,
@@ -36,8 +36,8 @@ pub struct MagicString {
   // suffix
   outro: String,
 
-  chunk_by_start: HashMap<usize, Rc<RefCell<Chunk>>>,
-  chunk_by_end: HashMap<usize, Rc<RefCell<Chunk>>>,
+  chunk_by_start: HashMap<u32, Rc<RefCell<Chunk>>>,
+  chunk_by_end: HashMap<u32, Rc<RefCell<Chunk>>>,
 
   last_searched_chunk: Rc<RefCell<Chunk>>,
   first_chunk: Rc<RefCell<Chunk>>,
@@ -46,7 +46,7 @@ pub struct MagicString {
 
 impl MagicString {
   pub fn new(str: &str) -> MagicString {
-    let original_chunk = Rc::new(RefCell::new(Chunk::new(0usize, str.len(), str)));
+    let original_chunk = Rc::new(RefCell::new(Chunk::new(0u32, str.len() as u32, str)));
 
     MagicString {
       original_str: String::from(str),
@@ -78,7 +78,7 @@ impl MagicString {
     Ok(self)
   }
 
-  pub fn prepend_left(&mut self, index: usize, str: &str) -> Result<&mut Self> {
+  pub fn prepend_left(&mut self, index: u32, str: &str) -> Result<&mut Self> {
     self._split_at_index(index);
 
     if let Some(chunk) = self.chunk_by_end.get(&index) {
@@ -90,7 +90,7 @@ impl MagicString {
     Ok(self)
   }
 
-  pub fn prepend_right(&mut self, index: usize, str: &str) -> Result<&mut Self> {
+  pub fn prepend_right(&mut self, index: u32, str: &str) -> Result<&mut Self> {
     self._split_at_index(index);
 
     if let Some(chunk) = self.chunk_by_start.get(&index) {
@@ -102,7 +102,7 @@ impl MagicString {
     Ok(self)
   }
 
-  pub fn append_left(&mut self, index: usize, str: &str) -> Result<&mut Self> {
+  pub fn append_left(&mut self, index: u32, str: &str) -> Result<&mut Self> {
     self._split_at_index(index);
 
     if let Some(chunk) = self.chunk_by_end.get(&index) {
@@ -114,7 +114,7 @@ impl MagicString {
     Ok(self)
   }
 
-  pub fn append_right(&mut self, index: usize, str: &str) -> Result<&mut Self> {
+  pub fn append_right(&mut self, index: u32, str: &str) -> Result<&mut Self> {
     self._split_at_index(index);
 
     if let Some(chunk) = self.chunk_by_start.get(&index) {
@@ -160,7 +160,7 @@ impl MagicString {
     Ok(SourceMap::new_from_decoded(decoded_map)?)
   }
 
-  fn _split_at_index(&mut self, index: usize) {
+  fn _split_at_index(&mut self, index: u32) {
     if self.chunk_by_end.contains_key(&index) || self.chunk_by_start.contains_key(&index) {
       // early bail-out if it's already split
       return;
@@ -188,7 +188,7 @@ impl MagicString {
     }
   }
 
-  fn _split_chunk_at_index(&mut self, chunk: Rc<RefCell<Chunk>>, index: usize) {
+  fn _split_chunk_at_index(&mut self, chunk: Rc<RefCell<Chunk>>, index: u32) {
     let new_chunk = Chunk::split(Rc::clone(&chunk), index);
 
     let new_chunk_original = new_chunk.borrow();

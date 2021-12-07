@@ -1,5 +1,3 @@
-use crate::MagicStringErrorType::{JSONSerializationError, UTF8EncodingError};
-
 use std::fmt::Formatter;
 use std::{
   fmt, io, result,
@@ -14,7 +12,7 @@ pub enum MagicStringErrorType {
   JSONSerializationError,
 
   VlqUnexpectedEof,
-  VlqInvalidBase64(u8),
+  VlqInvalidBase64,
   VlqOverflow,
 }
 
@@ -43,6 +41,7 @@ impl Error {
 }
 
 impl fmt::Display for Error {
+  #[inline]
   fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
     if let Some(ref reason) = self.reason {
       write!(f, "{:?}, {}", self.error_type, reason)
@@ -53,34 +52,39 @@ impl fmt::Display for Error {
 }
 
 impl From<io::Error> for Error {
+  #[inline]
   fn from(_: io::Error) -> Self {
     Error::new(MagicStringErrorType::IOError)
   }
 }
 
 impl From<vlq::Error> for Error {
+  #[inline]
   fn from(err: vlq::Error) -> Self {
     match err {
       vlq::Error::UnexpectedEof => Error::new(MagicStringErrorType::VlqUnexpectedEof),
-      vlq::Error::InvalidBase64(byte) => Error::new(MagicStringErrorType::VlqInvalidBase64(byte)),
+      vlq::Error::InvalidBase64(_) => Error::new(MagicStringErrorType::VlqInvalidBase64),
       vlq::Error::Overflow => Error::new(MagicStringErrorType::VlqOverflow),
     }
   }
 }
 
 impl From<string::FromUtf8Error> for Error {
+  #[inline]
   fn from(_: FromUtf8Error) -> Self {
-    Error::new(UTF8EncodingError)
+    Error::new(MagicStringErrorType::UTF8Error)
   }
 }
 
 impl From<serde_json::Error> for Error {
+  #[inline]
   fn from(_: serde_json::Error) -> Self {
-    Error::new(JSONSerializationError)
+    Error::new(MagicStringErrorType::JSONSerializationError)
   }
 }
 
 impl From<Error> for napi::Error {
+  #[inline]
   fn from(err: Error) -> Self {
     let mut reason = String::from("[magic-string] ");
 
@@ -88,9 +92,8 @@ impl From<Error> for napi::Error {
       MagicStringErrorType::VlqUnexpectedEof => {
         reason.push_str("Vlq Unexpected Eof");
       }
-      MagicStringErrorType::VlqInvalidBase64(byte) => {
-        reason.push_str("Vlq Unexpected Base64: ");
-        reason.push_str(String::from_utf8(vec![byte])?.as_str());
+      MagicStringErrorType::VlqInvalidBase64 => {
+        reason.push_str("Vlq Unexpected Base64");
       }
       MagicStringErrorType::VlqOverflow => {
         reason.push_str("Vlq Overflow");

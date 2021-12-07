@@ -1,9 +1,8 @@
-use serde::{Deserialize, Serialize};
-use serde_json::{Error as SerdeError, Result as SerdeResult};
+use serde::Serialize;
 
 use crate::magic_string::DecodedMap;
 use crate::mapping::Mapping;
-use crate::result::{Error, MagicStringErrorType, Result};
+use crate::result::Result;
 
 // current specification version
 static VERSION: u8 = 3;
