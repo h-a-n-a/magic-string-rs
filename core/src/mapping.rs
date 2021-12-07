@@ -146,22 +146,8 @@ impl Mapping {
         for item in segment.iter() {
           let mut vlq_output: Vec<u8> = vec![];
 
-          match vlq::encode(item.to_owned(), &mut vlq_output) {
-            Err(e) => {
-              return Err(Error::new_with_reason(
-                MagicStringErrorType::VLQEncodingError,
-                e.to_string().as_str(),
-              ))
-            }
-            _ => (),
-          };
-
-          match String::from_utf8(vlq_output) {
-            Err(_) => {
-              return Err(Error::new(MagicStringErrorType::UTF8EncodingError));
-            }
-            Ok(str) => segment_str.push(str),
-          }
+          vlq::encode(item.to_owned(), &mut vlq_output)?;
+          segment_str.push(String::from_utf8(vlq_output)?);
         }
 
         line_str.push(segment_str.join(""));

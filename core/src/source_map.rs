@@ -53,12 +53,7 @@ impl SourceMap {
   }
 
   pub fn to_json(&self) -> Result<String> {
-    let json_result = serde_json::to_string(self);
-
-    match json_result {
-      Err(_) => Err(Error::new(MagicStringErrorType::JSONSerializationError)),
-      Ok(json) => Ok(json),
-    }
+    Ok(serde_json::to_string(self)?)
   }
 
   pub fn to_url(&self) -> Result<String> {
