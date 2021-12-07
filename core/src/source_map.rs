@@ -11,12 +11,16 @@ static VERSION: u8 = 3;
 #[serde(rename_all = "camelCase")]
 pub struct SourceMap {
   pub version: u8,
-  pub file: Option<String>,
   pub mappings: String,
-  pub sources_content: Vec<Option<String>>,
-  pub source_root: Option<String>,
   pub names: Vec<String>,
   pub sources: Vec<Option<String>>,
+  pub sources_content: Vec<Option<String>>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  #[serde(default)]
+  pub file: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  #[serde(default)]
+  pub source_root: Option<String>,
 }
 
 impl SourceMap {
