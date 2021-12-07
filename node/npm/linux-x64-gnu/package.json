@@ -1,12 +1,27 @@
 {
   "name": "magic-string-rs-linux-x64-gnu",
   "version": "0.0.0",
-  "os": ["linux"],
-  "cpu": ["x64"],
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
   "main": "magic-string-rs.linux-x64-gnu.node",
-  "files": ["magic-string-rs.linux-x64-gnu.node"],
+  "files": [
+    "magic-string-rs.linux-x64-gnu.node"
+  ],
   "description": "Binary for magic-string-rs",
-  "keywords": ["magic-string", "string", "node", "Rust", "node-addon", "NAPI", "N-API", "napi-rs"],
+  "keywords": [
+    "magic-string",
+    "string",
+    "node",
+    "Rust",
+    "node-addon",
+    "NAPI",
+    "N-API",
+    "napi-rs"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">= 10"

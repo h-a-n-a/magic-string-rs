@@ -1,12 +1,27 @@
 {
   "name": "magic-string-rs-linux-arm-gnueabihf",
   "version": "0.0.0",
-  "os": ["linux"],
-  "cpu": ["arm"],
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm"
+  ],
   "main": "magic-string-rs.linux-arm-gnueabihf.node",
-  "files": ["magic-string-rs.linux-arm-gnueabihf.node"],
+  "files": [
+    "magic-string-rs.linux-arm-gnueabihf.node"
+  ],
   "description": "Binary for magic-string-rs",
-  "keywords": ["magic-string", "string", "node", "Rust", "node-addon", "NAPI", "N-API", "napi-rs"],
+  "keywords": [
+    "magic-string",
+    "string",
+    "node",
+    "Rust",
+    "node-addon",
+    "NAPI",
+    "N-API",
+    "napi-rs"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">= 10"

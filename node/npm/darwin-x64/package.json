@@ -1,12 +1,27 @@
 {
   "name": "magic-string-rs-darwin-x64",
   "version": "0.0.0",
-  "os": ["darwin"],
-  "cpu": ["x64"],
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "x64"
+  ],
   "main": "magic-string-rs.darwin-x64.node",
-  "files": ["magic-string-rs.darwin-x64.node"],
+  "files": [
+    "magic-string-rs.darwin-x64.node"
+  ],
   "description": "Binary for magic-string-rs",
-  "keywords": ["magic-string", "string", "node", "Rust", "node-addon", "NAPI", "N-API", "napi-rs"],
+  "keywords": [
+    "magic-string",
+    "string",
+    "node",
+    "Rust",
+    "node-addon",
+    "NAPI",
+    "N-API",
+    "napi-rs"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">= 10"
