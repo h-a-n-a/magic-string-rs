@@ -248,7 +248,7 @@ pub fn init(mut exports: JsObject, env: Env) -> Result<()> {
       Property::new(&env, "toJson")?.with_method(to_json_sourcemap),
       Property::new(&env, "toUrl")?.with_method(to_url_sourcemap),
       Property::new(&env, "toString")?.with_method(to_string),
-      Property::new(&env, "generate_decoded_map")?.with_method(generate_decoded_map),
+      Property::new(&env, "generateDecodedMap")?.with_method(generate_decoded_map),
     ],
   )?;
   exports.set_named_property("MagicString", magic_string_class)?;

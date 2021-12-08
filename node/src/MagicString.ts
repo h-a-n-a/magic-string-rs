@@ -7,6 +7,26 @@ export interface GenerateMapOptions {
   includeContent?: boolean
 }
 
+interface NativeDecodedMap {
+  // return empty string if not present
+  file: string
+  // return empty string if not present
+  sourceRoot: string
+  sources: string[]
+  sourcesContent: string[]
+  mappings: number[][][]
+  names: string[]
+}
+
+interface DecodedMap {
+  file: string
+  sourceRoot: string
+  sources: (string | null)[]
+  sourcesContent?: (string | null)[]
+  names: string[]
+  mappings: number[][][]
+}
+
 export interface GenerateDecodedMapOptions extends GenerateMapOptions {}
 
 export class MagicString {
@@ -69,8 +89,29 @@ export class MagicString {
     }
   }
 
-  // generateDecodedMap(options: GenerateDecodedMapOptions = {}) {
-  // }
+  generateDecodedMap(options: GenerateDecodedMapOptions = {}): DecodedMap {
+    const {
+      file = '',
+      source = '',
+      sourceRoot = '',
+      includeContent = false,
+    } = options
+    const decodedMap: NativeDecodedMap = this._instance.generateDecodedMap(
+      file,
+      source,
+      sourceRoot,
+      includeContent
+    )
+
+    decodedMap.sources = decodedMap.sources.map((source) => {
+      return source.length ? source : null
+    })
+    decodedMap.sourcesContent = decodedMap.sourcesContent.map((content) => {
+      return content.length ? content : null
+    })
+
+    return decodedMap
+  }
 
   toString(): string {
     return this._instance.toString()
