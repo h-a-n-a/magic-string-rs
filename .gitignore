@@ -17,7 +17,9 @@ Cargo.lock
 
 # Web
 node_modules
-pnpm-lock.yaml
-.pnpm-debug.log
+yarn.lock
+yarn-error.log
+dist
 
+# Node addon
 *.node

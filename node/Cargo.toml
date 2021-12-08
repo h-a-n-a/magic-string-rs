@@ -3,22 +3,21 @@ authors = ["h-a-n-a <andywangsy@gmail.com>"]
 name = "magic-string-node"
 version = "0.1.0"
 edition = "2018"
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
+path = "rs/lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-napi = "2.0.0-alpha.2"
-napi-derive = "2.0.0-alpha.3"
+napi = {version = "1.8.0", features = ["napi4", "serde-json"]}
+napi-derive = "1.1.2"
 magic_string = { path = "../core" }
 
 [target.'cfg(all(any(windows, unix), target_arch = "x86_64", not(target_env = "musl")))'.dependencies]
 mimalloc = {version = "0.1"}
 
 [build-dependencies]
-napi-build = "1"
-
-[profile.release]
-lto = true
+napi-build = "1.0.2"

@@ -2,10 +2,10 @@ pub mod locator {
   #[derive(Debug, Clone)]
   pub struct Locator {
     original_lines: Vec<String>,
-    line_offsets: Vec<usize>,
+    line_offsets: Vec<u32>,
   }
 
-  type Location = (usize, usize);
+  type Location = (u32, u32);
 
   impl Locator {
     pub fn new(original: &str) -> Self {
@@ -14,12 +14,12 @@ pub mod locator {
         .map(|line| line.to_owned())
         .collect::<Vec<String>>();
 
-      let mut line_offsets: Vec<usize> = vec![];
+      let mut line_offsets: Vec<u32> = vec![];
 
-      let mut pos_in_original = 0usize;
+      let mut pos_in_original = 0;
       for line in original_lines.iter() {
         line_offsets.push(pos_in_original);
-        pos_in_original += line.len() + 1;
+        pos_in_original += line.len() as u32 + 1;
       }
 
       Locator {
@@ -28,8 +28,8 @@ pub mod locator {
       }
     }
 
-    pub fn locate(&self, index: usize) -> Location {
-      let mut i = 0usize;
+    pub fn locate(&self, index: u32) -> Location {
+      let mut i = 0;
       let mut j = self.line_offsets.len();
 
       while i < j {
@@ -40,8 +40,8 @@ pub mod locator {
           i = m + 1;
         }
       }
-      let line = i - 1;
-      let column = index - self.line_offsets[line];
+      let line = (i - 1) as u32;
+      let column = index - self.line_offsets[line as usize];
 
       (line, column)
     }

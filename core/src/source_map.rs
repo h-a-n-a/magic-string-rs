@@ -1,9 +1,8 @@
-use serde::{Deserialize, Serialize};
-use serde_json::{Error as SerdeError, Result as SerdeResult};
+use serde::Serialize;
 
 use crate::magic_string::DecodedMap;
 use crate::mapping::Mapping;
-use crate::result::{Error, MagicStringErrorType, Result};
+use crate::result::Result;
 
 // current specification version
 static VERSION: u8 = 3;
@@ -12,12 +11,16 @@ static VERSION: u8 = 3;
 #[serde(rename_all = "camelCase")]
 pub struct SourceMap {
   pub version: u8,
-  pub file: Option<String>,
   pub mappings: String,
-  pub sources_content: Vec<Option<String>>,
-  pub source_root: Option<String>,
   pub names: Vec<String>,
   pub sources: Vec<Option<String>>,
+  pub sources_content: Vec<Option<String>>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  #[serde(default)]
+  pub file: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  #[serde(default)]
+  pub source_root: Option<String>,
 }
 
 impl SourceMap {
@@ -35,7 +38,7 @@ impl SourceMap {
       file,
       names,
       sources_content,
-      source_root: source_root.to_owned(),
+      source_root,
       sources,
     }
   }
@@ -53,12 +56,7 @@ impl SourceMap {
   }
 
   pub fn to_json(&self) -> Result<String> {
-    let json_result = serde_json::to_string(self);
-
-    match json_result {
-      Err(_) => Err(Error::new(MagicStringErrorType::JSONSerializationError)),
-      Ok(json) => Ok(json),
-    }
+    Ok(serde_json::to_string(self)?)
   }
 
   pub fn to_url(&self) -> Result<String> {

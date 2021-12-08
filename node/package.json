@@ -1,48 +1,38 @@
 {
-  "name": "magic-string-node",
+  "name": "magic-string-rs",
   "version": "0.0.0",
   "description": "rusty magic-string",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "license": "MIT",
-  "napi": {
-    "name": "magic-string-node",
-    "triples": {
-      "defaults": true,
-      "additional": [
-        "x86_64-unknown-linux-musl",
-        "aarch64-unknown-linux-gnu",
-        "i686-pc-windows-msvc",
-        "armv7-unknown-linux-gnueabihf",
-        "aarch64-apple-darwin",
-        "aarch64-linux-android",
-        "x86_64-unknown-freebsd",
-        "aarch64-unknown-linux-musl",
-        "aarch64-pc-windows-msvc"
-      ]
-    }
-  },
-  "engines": {
-    "node": ">= 10"
-  },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
+    "build:node": "esbuild src/index.ts --platform=node --target=es6 --bundle --outdir=dist  && yarn run typecheck",
     "build:debug": "napi build --platform",
+    "typecheck": "tsc",
     "prepublishOnly": "napi prepublish -t npm",
+    "test": "echo test",
+    "lint": "echo lint",
     "version": "napi version"
   },
   "devDependencies": {
     "@napi-rs/cli": "^1.3.5",
     "@swc-node/register": "^1.4.0",
+    "@types/node": "^16.11.12",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.31.2",
     "ava": "^3.15.0",
     "benny": "^3.7.1",
     "chalk": "^4.1.2",
+    "esbuild": "^0.14.2",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.25.3",
@@ -56,5 +46,37 @@
   },
   "dependencies": {
     "@node-rs/helper": "^1.2.1"
+  },
+  "optionalDependencies": {
+    "magic-string-rs-win32-x64-msvc": "0.0.0",
+    "magic-string-rs-darwin-x64": "0.0.0",
+    "magic-string-rs-linux-x64-gnu": "0.0.0",
+    "magic-string-rs-linux-x64-musl": "0.0.0",
+    "magic-string-rs-linux-arm64-gnu": "0.0.0",
+    "magic-string-rs-win32-ia32-msvc": "0.0.0",
+    "magic-string-rs-linux-arm-gnueabihf": "0.0.0",
+    "magic-string-rs-darwin-arm64": "0.0.0",
+    "magic-string-rs-freebsd-x64": "0.0.0",
+    "magic-string-rs-linux-arm64-musl": "0.0.0",
+    "magic-string-rs-win32-arm64-msvc": "0.0.0"
+  },
+  "napi": {
+    "name": "magic-string-rs",
+    "triples": {
+      "defaults": true,
+      "additional": [
+        "x86_64-unknown-linux-musl",
+        "aarch64-unknown-linux-gnu",
+        "i686-pc-windows-msvc",
+        "armv7-unknown-linux-gnueabihf",
+        "aarch64-apple-darwin",
+        "x86_64-unknown-freebsd",
+        "aarch64-unknown-linux-musl",
+        "aarch64-pc-windows-msvc"
+      ]
+    }
+  },
+  "engines": {
+    "node": ">= 10"
   }
 }

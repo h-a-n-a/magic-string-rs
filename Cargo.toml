@@ -1,4 +1,5 @@
 [workspace]
-members = ["core",
-#    "node", "wasm"
-]
+members = ["core", "node", "wasm"]
+
+[profile.release]
+lto = true

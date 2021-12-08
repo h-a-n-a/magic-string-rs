@@ -2,8 +2,8 @@ use std::{cell::RefCell, rc::Rc};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Chunk {
-  pub start: usize,
-  pub end: usize,
+  pub start: u32,
+  pub end: u32,
   pub original_str: String,
 
   pub content: String,
@@ -16,7 +16,7 @@ pub struct Chunk {
 }
 
 impl Chunk {
-  pub fn new(start: usize, end: usize, content: &str) -> Chunk {
+  pub fn new(start: u32, end: u32, content: &str) -> Chunk {
     Chunk {
       start,
       end,
@@ -67,14 +67,16 @@ impl Chunk {
     }
   }
 
-  pub fn contains(&self, index: usize) -> bool {
+  pub fn contains(&self, index: u32) -> bool {
     index >= self.start && index < self.end
   }
 
-  pub fn split(chunk: Rc<RefCell<Chunk>>, index: usize) -> Rc<RefCell<Self>> {
+  pub fn split(chunk: Rc<RefCell<Chunk>>, index: u32) -> Rc<RefCell<Self>> {
     let mut borrowed_chunk = chunk.borrow_mut();
-    let chunk_str = borrowed_chunk.original_str[0..(index - borrowed_chunk.start)].to_owned();
-    let next_chunk_str = borrowed_chunk.original_str[(index - borrowed_chunk.start)..].to_owned();
+    let chunk_str =
+      borrowed_chunk.original_str[0..(index - borrowed_chunk.start) as usize].to_owned();
+    let next_chunk_str =
+      borrowed_chunk.original_str[(index - borrowed_chunk.start) as usize..].to_owned();
 
     let next_chunk = Rc::new(RefCell::new(Chunk::new(
       index,
