@@ -2,7 +2,7 @@
 authors = ["h-a-n-a <andywangsy@gmail.com>"]
 name = "magic_string"
 description = "magic string"
-version = "0.1.0"
+version = "0.1.2"
 edition = "2018"
 license = "MIT"
 repository = "https://github.com/h-a-n-a/magic-string-rs"
