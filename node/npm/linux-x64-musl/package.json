@@ -1,5 +1,5 @@
 {
-  "name": "magic-string-rs-linux-x64-musl",
+  "name": "@napi-rs/magic-string-linux-x64-musl",
   "version": "0.0.0",
   "os": [
     "linux"
@@ -7,11 +7,11 @@
   "cpu": [
     "x64"
   ],
-  "main": "magic-string-rs.linux-x64-musl.node",
+  "main": "@napi-rs/magic-string.linux-x64-musl.node",
   "files": [
-    "magic-string-rs.linux-x64-musl.node"
+    "@napi-rs/magic-string.linux-x64-musl.node"
   ],
-  "description": "Binary for magic-string-rs",
+  "description": "Binary for @napi-rs/magic-string",
   "keywords": [
     "magic-string",
     "string",
@@ -30,5 +30,5 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
-  "repository": "git@github.com:h-a-n-a/magic-string-rs.git"
+  "repository": "git@github.com:h-a-n-a/@napi-rs/magic-string.git"
 }
