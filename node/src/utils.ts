@@ -5,7 +5,7 @@ export const getMagicString = (): any => {
   const { MagicString } = loadBinding(
     resolve(__dirname, '../'),
     'magic-string-rs',
-    'magic-string-rs'
+    '@napi-rs/magic-string'
   )
   return MagicString
 }
