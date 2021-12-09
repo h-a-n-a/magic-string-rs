@@ -1,6 +1,6 @@
 {
-  "name": "magic-string-rs",
-  "version": "0.0.0",
+  "name": "@napi-rs/magic-string",
+  "version": "0.1.1",
   "description": "rusty magic-string",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,6 +9,13 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
+  "keywords": [
+    "magic-string",
+    "string",
+    "napi",
+    "N-API",
+    "napi-rs"
+  ],
   "files": [
     "dist"
   ],
@@ -46,19 +53,6 @@
   },
   "dependencies": {
     "@node-rs/helper": "^1.2.1"
-  },
-  "optionalDependencies": {
-    "magic-string-rs-win32-x64-msvc": "0.0.0",
-    "magic-string-rs-darwin-x64": "0.0.0",
-    "magic-string-rs-linux-x64-gnu": "0.0.0",
-    "magic-string-rs-linux-x64-musl": "0.0.0",
-    "magic-string-rs-linux-arm64-gnu": "0.0.0",
-    "magic-string-rs-win32-ia32-msvc": "0.0.0",
-    "magic-string-rs-linux-arm-gnueabihf": "0.0.0",
-    "magic-string-rs-darwin-arm64": "0.0.0",
-    "magic-string-rs-freebsd-x64": "0.0.0",
-    "magic-string-rs-linux-arm64-musl": "0.0.0",
-    "magic-string-rs-win32-arm64-msvc": "0.0.0"
   },
   "napi": {
     "name": "magic-string-rs",

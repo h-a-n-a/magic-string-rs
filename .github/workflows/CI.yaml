@@ -468,18 +468,22 @@ jobs:
           path: node/artifacts
       - name: Move artifacts
         run: cd node && yarn artifacts
+      - name: Build packages
+        run: cd node && yarn build:node
       - name: List packages
         run: ls -R ./node/npm
         shell: bash
       - name: Publish
         run: |
-          if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
+          if git log -1 --pretty=%B | grep "^chore(release): v[0-9]\+\.[0-9]\+\.[0-9]\+$";
           then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            cd node
             npm publish --access public
           elif git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+";
           then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            cd node
             npm publish --tag next --access public
           else
             echo "Not a release, skipping publish"
