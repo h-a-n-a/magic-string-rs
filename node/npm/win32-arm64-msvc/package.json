@@ -1,17 +1,17 @@
 {
-  "name": "magic-string-rs-win32-arm64-msvc",
-  "version": "0.0.0",
+  "name": "@napi-rs/magic-string-win32-arm64-msvc",
+  "version": "0.1.0",
   "os": [
     "win32"
   ],
   "cpu": [
     "arm64"
   ],
-  "main": "magic-string-rs.win32-arm64-msvc.node",
+  "main": "@napi-rs/magic-string.win32-arm64-msvc.node",
   "files": [
-    "magic-string-rs.win32-arm64-msvc.node"
+    "@napi-rs/magic-string.win32-arm64-msvc.node"
   ],
-  "description": "Binary for magic-string-rs",
+  "description": "Binary for @napi-rs/magic-string",
   "keywords": [
     "magic-string",
     "string",
@@ -30,5 +30,5 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
-  "repository": "git@github.com:h-a-n-a/magic-string-rs.git"
+  "repository": "git@github.com:h-a-n-a/@napi-rs/magic-string.git"
 }
