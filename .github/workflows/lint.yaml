@@ -41,7 +41,7 @@ jobs:
         run: cargo clippy
 
       - name: 'Install dependencies'
-        run: cd node && yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+        run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
 
       - name: ESLint
-        run: cd node && yarn lint
+        run: yarn --cwd node lint

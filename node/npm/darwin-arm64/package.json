@@ -11,16 +11,23 @@
   "files": [
     "magic-string-rs.darwin-arm64.node"
   ],
-  "description": "Binary for @napi-rs/magic-string",
+  "description": "rusty magic-string",
   "keywords": [
     "magic-string",
     "string",
-    "node",
-    "Rust",
-    "node-addon",
-    "NAPI",
+    "napi",
     "N-API",
     "napi-rs"
+  ],
+  "authors": [
+    {
+      "name": "h-a-n-a",
+      "email": "andywangsy@gmail.com"
+    },
+    {
+      "name": "LongYinan",
+      "email": "github@lyn.one"
+    }
   ],
   "license": "MIT",
   "engines": {
@@ -30,5 +37,5 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
-  "repository": "git@github.com:h-a-n-a/magic-string-rs.git"
+  "repository": "https://github.com/h-a-n-a/magic-string-rs.git"
 }

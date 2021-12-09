@@ -1,5 +1,8 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc, string::ToString};
 
+#[cfg(feature = "node-api")]
+use napi_derive::napi;
+
 use crate::{
   chunk::Chunk,
   mapping::{Mapping, Mappings},
@@ -8,6 +11,8 @@ use crate::{
   utils::locator::Locator,
 };
 
+#[cfg(feature = "node-api")]
+#[napi(object)]
 #[derive(Debug, Default, Clone)]
 pub struct GenerateDecodedMapOptions {
   pub file: Option<String>,
@@ -16,7 +21,16 @@ pub struct GenerateDecodedMapOptions {
   pub include_content: bool,
 }
 
-#[derive(Debug)]
+#[cfg(not(feature = "node-api"))]
+#[derive(Debug, Default, Clone)]
+pub struct GenerateDecodedMapOptions {
+  pub file: Option<String>,
+  pub source_root: Option<String>,
+  pub source: Option<String>,
+  pub include_content: bool,
+}
+
+#[derive(Debug, Serialize)]
 pub struct DecodedMap {
   pub file: Option<String>,
   pub sources: Vec<Option<String>>,
@@ -157,7 +171,7 @@ impl MagicString {
 
   pub fn generate_map(&mut self, options: GenerateDecodedMapOptions) -> Result<SourceMap> {
     let decoded_map = self.generate_decoded_map(options)?;
-    Ok(SourceMap::new_from_decoded(decoded_map)?)
+    SourceMap::new_from_decoded(decoded_map)
   }
 
   fn _split_at_index(&mut self, index: u32) {
@@ -209,7 +223,7 @@ impl MagicString {
 
 impl ToString for MagicString {
   fn to_string(&self) -> String {
-    let mut str = String::from(self.intro.to_owned());
+    let mut str = self.intro.to_owned();
 
     Chunk::each_next(Rc::clone(&self.first_chunk), |chunk| {
       let chunk = chunk.borrow();

@@ -83,6 +83,7 @@ impl From<serde_json::Error> for Error {
   }
 }
 
+#[cfg(feature = "node-api")]
 impl From<Error> for napi::Error {
   #[inline]
   fn from(err: Error) -> Self {

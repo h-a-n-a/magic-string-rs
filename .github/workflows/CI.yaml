@@ -3,8 +3,7 @@ env:
   DEBUG: napi:*
   APP_NAME: magic-string-rs
   MACOSX_DEPLOYMENT_TARGET: '10.13'
-
-on:
+'on':
   push:
     branches:
       - main
@@ -12,12 +11,11 @@ on:
       - '**'
     paths-ignore:
       - '**/*.md'
-      - 'LICENSE'
+      - LICENSE
       - '**/*.gitignore'
-      - '.editorconfig'
-      - 'docs/**'
+      - .editorconfig
+      - docs/**
   pull_request: null
-
 jobs:
   build:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
@@ -27,89 +25,102 @@ jobs:
         settings:
           - host: macos-latest
             target: x86_64-apple-darwin
+            architecture: x64
             build: |
-              cd node
               yarn build
-              strip -x *.node
+              strip -x node/*.node
           - host: windows-latest
-            build: |
-              cd node
-              yarn build
+            build: yarn build
             target: x86_64-pc-windows-msvc
+            architecture: x64
           - host: windows-latest
             build: |
-              export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=32;
-              export CARGO_PROFILE_RELEASE_LTO=false
-              cd node
               yarn build --target i686-pc-windows-msvc
-              yarn test
+              yarn --cwd node test
             target: i686-pc-windows-msvc
-            setup: |
-              choco install nodejs-lts --x86 -y --force
-              echo "C:\Program Files (x86)\nodejs" >> $GITHUB_PATH
+            architecture: x86
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+            architecture: x64
             docker: |
-              docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD $DOCKER_REGISTRY_URL
               docker pull $DOCKER_REGISTRY_URL/napi-rs/napi-rs/nodejs-rust:lts-debian
               docker tag $DOCKER_REGISTRY_URL/napi-rs/napi-rs/nodejs-rust:lts-debian builder
             build: |
-              docker run --rm -v ~/.cargo/git:/root/.cargo/git -v ~/.cargo/registry:/root/.cargo/registry -v $(pwd):/build -w /build builder sh -c "cd node && yarn build && strip magic-string-rs.linux-x64-gnu.node"
+              docker run --rm -v ~/.cargo/git:/root/.cargo/git -v ~/.cargo/registry:/root/.cargo/registry -v $(pwd):/build -w /build builder yarn build && strip node/magic-string-rs.linux-x64-gnu.node
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
+            architecture: x64
             docker: |
-              docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD $DOCKER_REGISTRY_URL
               docker pull $DOCKER_REGISTRY_URL/napi-rs/napi-rs/nodejs-rust:lts-alpine
               docker tag $DOCKER_REGISTRY_URL/napi-rs/napi-rs/nodejs-rust:lts-alpine builder
-            build: |
-              docker run --rm -v ~/.cargo/git:/root/.cargo/git -v ~/.cargo/registry:/root/.cargo/registry -v $(pwd):/build -w /build builder sh -c "cd node && yarn build && strip magic-string-rs.linux-x64-musl.node"
+            build: docker run --rm -v ~/.cargo/git:/root/.cargo/git -v ~/.cargo/registry:/root/.cargo/registry -v $(pwd):/build -w /build builder yarn build && strip node/magic-string-rs.linux-x64-musl.node
           - host: macos-latest
             target: aarch64-apple-darwin
             build: |
-              cd node
               yarn build --target=aarch64-apple-darwin
-              strip -x *.node
+              strip -x node/*.node
           - host: ubuntu-latest
+            architecture: x64
             target: aarch64-unknown-linux-gnu
             setup: |
               sudo apt-get update
               sudo apt-get install g++-aarch64-linux-gnu gcc-aarch64-linux-gnu -y
             build: |
-              cd node
               yarn build --target=aarch64-unknown-linux-gnu
-              aarch64-linux-gnu-strip magic-string-rs.linux-arm64-gnu.node
+              aarch64-linux-gnu-strip node/magic-string-rs.linux-arm64-gnu.node
           - host: ubuntu-latest
+            architecture: x64
             target: armv7-unknown-linux-gnueabihf
             setup: |
               sudo apt-get update
               sudo apt-get install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf -y
             build: |
-              cd node
               yarn build --target=armv7-unknown-linux-gnueabihf
-              arm-linux-gnueabihf-strip magic-string-rs.linux-arm-gnueabihf.node
+              arm-linux-gnueabihf-strip node/magic-string-rs.linux-arm-gnueabihf.node
           - host: ubuntu-latest
+            architecture: x64
+            target: aarch64-linux-android
+            build: |
+              export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang"
+              export CC="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang"
+              export CXX="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang++"
+              export PATH="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin:${PATH}"
+              yarn build --target aarch64-linux-android
+              ${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-strip node/*.node
+          - host: ubuntu-latest
+            architecture: x64
+            target: armv7-linux-androideabi
+            build: |
+              export CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi24-clang"
+              export CC="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi24-clang"
+              export CXX="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi24-clang++"
+              export PATH="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin:${PATH}"
+              yarn build --target armv7-linux-androideabi
+              ${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/arm-linux-androideabi-strip node/*.node
+          - host: ubuntu-latest
+            architecture: x64
             target: aarch64-unknown-linux-musl
             downloadTarget: aarch64-unknown-linux-musl
             docker: |
-              docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD $DOCKER_REGISTRY_URL
               docker pull ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
               docker tag ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine builder
             build: |
-              docker run --rm -v ~/.cargo/git:/root/.cargo/git -v ~/.cargo/registry:/root/.cargo/registry -v $(pwd):/build -w /build builder sh -c "cd node && yarn build --target=aarch64-unknown-linux-musl && /aarch64-linux-musl-cross/bin/aarch64-linux-musl-strip magic-string-rs.linux-arm64-musl.node"
+              docker run --rm -v ~/.cargo/git:/root/.cargo/git -v ~/.cargo/registry:/root/.cargo/registry -v $(pwd):/build -w /build builder sh -c "yarn build --target=aarch64-unknown-linux-musl && /aarch64-linux-musl-cross/bin/aarch64-linux-musl-strip node/magic-string-rs.linux-arm64-musl.node"
           - host: windows-latest
+            architecture: x64
             target: aarch64-pc-windows-msvc
-            build: |
-              cd node
-              yarn build --target aarch64-pc-windows-msvc
-    name: stable - ${{ matrix.settings.target }} - node@14
+            build: yarn build --target aarch64-pc-windows-msvc
+    name: stable - ${{ matrix.settings.target }} - node@16
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v2
       - name: Setup node
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 16
           check-latest: true
+          cache: yarn
+          architecture: ${{ matrix.settings.architecture }}
       - name: Install
         uses: actions-rs/toolchain@v1
         with:
@@ -125,30 +136,28 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.cargo/registry
-          key: ${{ matrix.settings.target }}-node@14-cargo-registry-trimmed-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.settings.target }}-node@16-cargo-registry-trimmed-${{ hashFiles('**/Cargo.lock') }}
       - name: Cache cargo index
         uses: actions/cache@v2
         with:
           path: ~/.cargo/git
-          key: ${{ matrix.settings.target }}-node@14-cargo-index-trimmed-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.settings.target }}-node@16-cargo-index-trimmed-${{ hashFiles('**/Cargo.lock') }}
       - name: Cache NPM dependencies
         uses: actions/cache@v2
         with:
-          path: node/node_modules
-          key: npm-cache-${{ matrix.settings.target }}-node@14-${{ hashFiles('yarn.lock') }}
+          path: node_modules
+          key: npm-cache-${{ matrix.settings.target }}-node@16-${{ hashFiles('yarn.lock') }}
       - name: Pull latest image
         run: ${{ matrix.settings.docker }}
         env:
           DOCKER_REGISTRY_URL: ghcr.io
-          DOCKER_USERNAME: ${{ github.actor }}
-          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         if: ${{ matrix.settings.docker }}
       - name: Setup toolchain
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
         shell: bash
       - name: Install dependencies
-        run: cd node && yarn install --ignore-scripts --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+        run: yarn install --ignore-scripts --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
       - name: Build
         run: ${{ matrix.settings.build }}
         shell: bash
@@ -157,6 +166,7 @@ jobs:
         with:
           name: bindings-${{ matrix.settings.target }}
           path: node/${{ env.APP_NAME }}.*.node
+          if-no-files-found: error
   build-freebsd:
     runs-on: macos-10.15
     name: Build FreeBSD
@@ -194,17 +204,18 @@ jobs:
             whoami
             env
             freebsd-version
-            cd node
             yarn install --ignore-scripts --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
-            yarn build
-            yarn test
+            yarn --cwd node build
+            strip -x node/*.node
+            yarn --cwd node test
             rm -rf node_modules
             rm -rf target
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: bindings-freebsd
-          path: ${{ env.APP_NAME }}.*.node
+          path: node/${{ env.APP_NAME }}.*.node
+          if-no-files-found: error
   test-macOS-windows-binding:
     name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
     needs:
@@ -220,9 +231,6 @@ jobs:
           - '14'
           - '16'
     runs-on: ${{ matrix.settings.host }}
-    defaults:
-      run:
-        working-directory: ./node
     steps:
       - uses: actions/checkout@v2
       - name: Setup node
@@ -230,6 +238,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           check-latest: true
+          cache: yarn
       - name: Cache NPM dependencies
         uses: actions/cache@v2
         with:
@@ -241,12 +250,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: .
+          path: ./node
       - name: List packages
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: yarn test
+        run: yarn --cwd node test
   test-linux-x64-gnu-binding:
     name: Test bindings on Linux-x64-gnu - node@${{ matrix.node }}
     needs:
@@ -259,9 +268,6 @@ jobs:
           - '14'
           - '16'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./node
     steps:
       - uses: actions/checkout@v2
       - name: Setup node
@@ -269,10 +275,11 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           check-latest: true
+          cache: yarn
       - name: Cache NPM dependencies
         uses: actions/cache@v2
         with:
-          path: node/node_modules
+          path: node_modules
           key: npm-cache-test-linux-x64-gnu-${{ matrix.node }}-${{ hashFiles('yarn.lock') }}
       - name: Install dependencies
         run: yarn install --ignore-scripts --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
@@ -280,12 +287,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: bindings-x86_64-unknown-linux-gnu
-          path: .
+          path: ./node
       - name: List packages
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/magic-string-rs -w /magic-string-rs node:${{ matrix.node }}-slim yarn test
+        run: docker run --rm -v $(pwd):/magic-string-rs -w /magic-string-rs node:${{ matrix.node }}-slim yarn --cwd node test
   test-linux-x64-musl-binding:
     name: Test bindings on x86_64-unknown-linux-musl - node@${{ matrix.node }}
     needs:
@@ -298,9 +305,6 @@ jobs:
           - '14'
           - '16'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./node
     steps:
       - uses: actions/checkout@v2
       - name: Setup node
@@ -308,10 +312,11 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           check-latest: true
+          cache: yarn
       - name: Cache NPM dependencies
         uses: actions/cache@v2
         with:
-          path: node/node_modules
+          path: node_modules
           key: npm-cache-test-x86_64-unknown-linux-musl-${{ matrix.node }}-${{ hashFiles('yarn.lock') }}
       - name: Install dependencies
         run: yarn install --ignore-scripts --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
@@ -319,12 +324,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: bindings-x86_64-unknown-linux-musl
-          path: .
+          path: ./node
       - name: List packages
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/magic-string-rs -w /magic-string-rs node:${{ matrix.node }}-alpine yarn test
+        run: docker run --rm -v $(pwd):/magic-string-rs -w /magic-string-rs node:${{ matrix.node }}-alpine yarn --cwd node test
   test-linux-aarch64-gnu-binding:
     name: Test bindings on aarch64-unknown-linux-gnu - node@${{ matrix.node }}
     needs:
@@ -346,23 +351,23 @@ jobs:
           name: bindings-aarch64-unknown-linux-gnu
           path: ./node
       - name: List packages
-        run: ls -R ./node
+        run: ls -R .
         shell: bash
       - name: Cache NPM dependencies
         uses: actions/cache@v2
         with:
-          path: node/node_modules
+          path: node_modules
           key: npm-cache-test-linux-aarch64-gnu-${{ matrix.node }}-${{ hashFiles('yarn.lock') }}
       - name: Install dependencies
-        run: cd node && yarn install --ignore-scripts --ignore-platform --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+        run: yarn install --ignore-scripts --ignore-platform --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
           image: ghcr.io/napi-rs/napi-rs/nodejs:aarch64-${{ matrix.node }}
           options: '-v ${{ github.workspace }}:/build -w /build'
           run: |
-            cd node
-            yarn test
+            set -e
+            yarn --cwd node test
             ls -la
   test-linux-aarch64-musl-binding:
     name: Test bindings on aarch64-unknown-linux-musl - node@${{ matrix.node }}
@@ -378,24 +383,24 @@ jobs:
           name: bindings-aarch64-unknown-linux-musl
           path: ./node
       - name: List packages
-        run: ls -R ./node
+        run: ls -R .
         shell: bash
       - name: Cache NPM dependencies
         uses: actions/cache@v2
         with:
-          path: node/node_modules
+          path: node_modules
           key: npm-cache-test-linux-aarch64-musl-${{ matrix.node }}-${{ hashFiles('yarn.lock') }}
       - name: Install dependencies
-        run: cd node && yarn install --ignore-scripts --ignore-platform --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+        run: yarn install --ignore-scripts --ignore-platform --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
           image: multiarch/alpine:aarch64-latest-stable
           options: '-v ${{ github.workspace }}:/build -w /build'
           run: |
+            set -e
             apk add nodejs npm yarn
-            cd node
-            yarn test
+            yarn --cwd node test
   test-linux-arm-gnueabihf-binding:
     name: Test bindings on armv7-unknown-linux-gnueabihf - node@${{ matrix.node }}
     needs:
@@ -417,23 +422,23 @@ jobs:
           name: bindings-armv7-unknown-linux-gnueabihf
           path: ./node
       - name: List packages
-        run: ls -R ./node
+        run: ls -R .
         shell: bash
       - name: Cache NPM dependencies
         uses: actions/cache@v2
         with:
-          path: node/node_modules
+          path: node_modules
           key: npm-cache-test-linux-arm-gnueabihf-${{ matrix.node }}-${{ hashFiles('yarn.lock') }}
       - name: Install dependencies
-        run: cd node && yarn install --ignore-scripts --ignore-platform --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+        run: yarn install --ignore-scripts --ignore-platform --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
           image: ghcr.io/napi-rs/napi-rs/nodejs:armhf-${{ matrix.node }}
           options: '-v ${{ github.workspace }}:/build -w /build'
           run: |
-            cd node
-            yarn test
+            set -e
+            yarn --cwd node test
             ls -la
   publish:
     name: Publish
@@ -451,25 +456,22 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 16
           check-latest: true
+          cache: yarn
       - name: Cache NPM dependencies
         uses: actions/cache@v2
         with:
-          path: node/node_modules
-          key: npm-cache-ubuntu-latest-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            npm-cache-
+          path: node_modules
+          key: npm-cache-publish-ubuntu-latest-${{ hashFiles('yarn.lock') }}
       - name: Install dependencies
-        run: cd node && yarn install --ignore-scripts --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+        run: yarn install --ignore-scripts --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
       - name: Download all artifacts
         uses: actions/download-artifact@v2
         with:
           path: node/artifacts
       - name: Move artifacts
-        run: cd node && yarn artifacts
-      - name: Build packages
-        run: cd node && yarn build:node
+        run: yarn --cwd node artifacts
       - name: List packages
         run: ls -R ./node/npm
         shell: bash

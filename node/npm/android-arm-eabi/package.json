@@ -1,15 +1,15 @@
 {
-  "name": "@napi-rs/magic-string-linux-x64-gnu",
+  "name": "@napi-rs/magic-string-android-arm-eabi",
   "version": "0.1.2",
   "os": [
-    "linux"
+    "android"
   ],
   "cpu": [
-    "x64"
+    "arm"
   ],
-  "main": "magic-string-rs.linux-x64-gnu.node",
+  "main": "magic-string-rs.android-arm-eabi.node",
   "files": [
-    "magic-string-rs.linux-x64-gnu.node"
+    "magic-string-rs.android-arm-eabi.node"
   ],
   "description": "rusty magic-string",
   "keywords": [

@@ -52,18 +52,12 @@ impl Chunk {
 
   pub fn each_next<F>(chunk: Rc<RefCell<Chunk>>, mut f: F)
   where
-    F: FnMut(Rc<RefCell<Chunk>>) -> (),
+    F: FnMut(Rc<RefCell<Chunk>>),
   {
     let mut curr = Some(chunk);
     while let Some(value) = curr {
       f(Rc::clone(&value));
-      curr = {
-        if let Some(ref c) = value.borrow().next {
-          Some(Rc::clone(c))
-        } else {
-          None
-        }
-      };
+      curr = value.borrow().next.as_ref().map(Rc::clone);
     }
   }
 
@@ -85,7 +79,7 @@ impl Chunk {
     )));
 
     borrowed_chunk.original_str = chunk_str.to_owned();
-    borrowed_chunk.content = chunk_str.to_owned();
+    borrowed_chunk.content = chunk_str;
     borrowed_chunk.end = index;
 
     /* Outro of the current chunk will be moved to the newly created one
@@ -95,7 +89,7 @@ impl Chunk {
 
     next_chunk.borrow_mut().outro = borrowed_chunk.outro.to_owned();
     next_chunk.borrow_mut().next = {
-      if let Some(_) = borrowed_chunk.next {
+      if borrowed_chunk.next.is_some() {
         Some(Rc::clone(borrowed_chunk.next.as_ref().unwrap()))
       } else {
         None

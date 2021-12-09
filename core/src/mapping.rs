@@ -1,7 +1,5 @@
 use std::{cell::RefCell, rc::Rc};
 
-use vlq;
-
 use crate::chunk::Chunk;
 use crate::result::Result;
 
@@ -41,7 +39,7 @@ impl Mapping {
     self.advance(chunk.borrow().intro.as_str());
 
     let original_str = chunk.borrow().original_str.to_owned();
-    let original_lines = original_str.split("\n").collect::<Vec<_>>();
+    let original_lines = original_str.split('\n').collect::<Vec<_>>();
 
     for (index, s) in original_lines.iter().enumerate() {
       if s.is_empty() {
@@ -85,7 +83,7 @@ impl Mapping {
       return;
     }
 
-    let lines = str.split("\n").collect::<Vec<_>>();
+    let lines = str.split('\n').collect::<Vec<_>>();
 
     if lines.len() > 1 {
       self.generated_code_column = 0;

@@ -1,0 +1,26 @@
+{
+  "name": "magic-string-rs",
+  "version": "0.0.0",
+  "description": "https://github.com/Rich-Harris/magic-string Rust port",
+  "main": "index.js",
+  "repository": "https://github.com/h-a-n-a/magic-string-rs.git",
+  "author": "andywangsy@gmail.com",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "node"
+  ],
+  "scripts": {
+    "build": "yarn --cwd node build"
+  },
+  "dependencies": {
+    "prettier": "^2.5.1"
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "arrowParens": "always"
+  }
+}
