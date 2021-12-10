@@ -6,12 +6,6 @@ export class ExternalObject<T> {
     [K: symbol]: T
   }
 }
-export interface GenerateDecodedMapOptions {
-  file?: string | undefined | null
-  sourceRoot?: string | undefined | null
-  source?: string | undefined | null
-  includeContent: boolean
-}
 /** Only for .d.ts type generation */
 export interface DecodedMap {
   file?: string | undefined | null
