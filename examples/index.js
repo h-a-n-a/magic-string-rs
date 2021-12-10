@@ -1,3 +1,3 @@
-const magicString = require("../node")
+const magicString = require('../node')
 
 console.log(magicString.init(123))

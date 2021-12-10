@@ -10,7 +10,7 @@ pub mod locator {
   impl Locator {
     pub fn new(original: &str) -> Self {
       let original_lines = original
-        .split("\n")
+        .split('\n')
         .map(|line| line.to_owned())
         .collect::<Vec<String>>();
 

@@ -1,15 +1,15 @@
 {
-  "name": "@napi-rs/magic-string-linux-x64-gnu",
+  "name": "@napi-rs/magic-string-android-arm64",
   "version": "0.1.2",
   "os": [
-    "linux"
+    "android"
   ],
   "cpu": [
-    "x64"
+    "arm64"
   ],
-  "main": "magic-string-rs.linux-x64-gnu.node",
+  "main": "magic-string-rs.android-arm64.node",
   "files": [
-    "magic-string-rs.linux-x64-gnu.node"
+    "magic-string-rs.android-arm64.node"
   ],
   "description": "rusty magic-string",
   "keywords": [

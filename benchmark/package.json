@@ -1,0 +1,10 @@
+{
+  "name": "bench",
+  "private": true,
+  "license": "MIT",
+  "version": "0.0.0",
+  "dependencies": {
+    "benny": "^3.7.1",
+    "magic-string": "^0.25.7"
+  }
+}
