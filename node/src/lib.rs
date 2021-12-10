@@ -2,10 +2,17 @@ extern crate napi;
 #[macro_use]
 extern crate napi_derive;
 
+use napi::bindgen_prelude::*;
 use napi::Result;
+
+use magic_string::SourceMap;
 
 #[napi]
 pub struct MagicString(magic_string::MagicString);
+
+pub fn create_external<T>(value: T) -> External<T> {
+  External::new(value)
+}
 
 #[napi]
 impl MagicString {
@@ -50,25 +57,25 @@ impl MagicString {
     Ok(self)
   }
 
-  #[napi]
-  pub fn to_json_sourcemap(
+  #[napi(ts_return_type = "{ toString: () => string, toUrl: () => string }")]
+  pub fn generate_map(
     &mut self,
     options: Option<magic_string::GenerateDecodedMapOptions>,
-  ) -> Result<String> {
-    Ok(
-      self
-        .0
-        .generate_map(options.unwrap_or_default())?
-        .to_json()?,
-    )
+  ) -> Result<External<SourceMap>> {
+    let external = create_external(self.0.generate_map(options.unwrap_or_default())?);
+    Ok(external)
   }
 
+  /// @internal
   #[napi]
-  pub fn to_url_sourcemap(
-    &mut self,
-    options: Option<magic_string::GenerateDecodedMapOptions>,
-  ) -> Result<String> {
-    Ok(self.0.generate_map(options.unwrap_or_default())?.to_url()?)
+  pub fn to_sourcemap_string(&mut self, sourcemap: External<SourceMap>) -> Result<String> {
+    Ok((*sourcemap.as_ref()).to_string()?)
+  }
+
+  /// @internal
+  #[napi]
+  pub fn to_sourcemap_url(&mut self, sourcemap: External<SourceMap>) -> Result<String> {
+    Ok((*sourcemap.as_ref()).to_url()?)
   }
 
   #[napi(ts_return_type = "DecodedMap")]

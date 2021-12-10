@@ -12,3 +12,4 @@ pub mod result;
 
 pub use crate::magic_string::*;
 pub use crate::result::*;
+pub use crate::source_map::SourceMap;

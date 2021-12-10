@@ -15,8 +15,6 @@ pub struct SourceMap {
   pub names: Vec<String>,
   pub sources: Vec<Option<String>>,
   pub sources_content: Vec<Option<String>>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  #[serde(default)]
   pub file: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   #[serde(default)]
@@ -55,12 +53,12 @@ impl SourceMap {
     })
   }
 
-  pub fn to_json(&self) -> Result<String> {
+  pub fn to_string(&self) -> Result<String> {
     Ok(serde_json::to_string(self)?)
   }
 
   pub fn to_url(&self) -> Result<String> {
-    let str = Self::to_json(self)?;
+    let str = Self::to_string(self)?;
 
     Ok(format!(
       "data:application/json;charset=utf-8;base64,{}",

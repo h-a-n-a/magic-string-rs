@@ -6,6 +6,12 @@ export class ExternalObject<T> {
     [K: symbol]: T
   }
 }
+export interface GenerateDecodedMapOptions {
+  file?: string | undefined | null
+  sourceRoot?: string | undefined | null
+  source?: string | undefined | null
+  includeContent: boolean
+}
 /** Only for .d.ts type generation */
 export interface DecodedMap {
   file?: string | undefined | null
@@ -30,10 +36,14 @@ export class MagicString {
   appendRight(index: number, input: string): this
   prependLeft(index: number, input: string): this
   prependRight(index: number, input: string): this
-  toJsonSourcemap(
-    options?: GenerateDecodedMapOptions | undefined | null,
-  ): string
-  toUrlSourcemap(options?: GenerateDecodedMapOptions | undefined | null): string
+  generateMap(options?: GenerateDecodedMapOptions | undefined | null): {
+    toString: () => string
+    toUrl: () => string
+  }
+  /** @internal */
+  toSourcemapString(sourcemap: ExternalObject<SourceMap>): string
+  /** @internal */
+  toSourcemapUrl(sourcemap: ExternalObject<SourceMap>): string
   generateDecodedMap(
     options?: GenerateDecodedMapOptions | undefined | null,
   ): DecodedMap
