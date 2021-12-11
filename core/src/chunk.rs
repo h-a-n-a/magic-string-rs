@@ -1,5 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
+use crate::utils::trim;
+use crate::Result;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Chunk {
   pub start: u32,
@@ -50,14 +53,70 @@ impl Chunk {
     self.intro = format!("{}{}", content, self.intro);
   }
 
+  pub fn trim_start_regexp(&mut self, pat: &str) -> Result {
+    let trimmed_intro = trim::trim_start_regexp(self.intro.as_str(), pat)?.to_owned();
+    self.intro = trimmed_intro.to_owned();
+    if trimmed_intro.len() > 0 {
+      return Ok(());
+    }
+
+    let trimmed_content = trim::trim_start_regexp(self.content.as_str(), pat)?.to_owned();
+    self.content = trimmed_content.to_owned();
+    if trimmed_content.len() > 0 {
+      return Ok(());
+    }
+
+    let trimmed_outro = trim::trim_start_regexp(self.outro.as_str(), pat)?.to_owned();
+    self.outro = trimmed_outro.to_owned();
+
+    Ok(())
+  }
+
+  pub fn trim_end_regexp(&mut self, pat: &str) -> Result {
+    let trimmed_outro = trim::trim_end_regexp(self.outro.as_str(), pat)?.to_owned();
+    self.intro = trimmed_outro.to_owned();
+
+    if trimmed_outro.len() > 0 {
+      return Ok(());
+    }
+
+    let trimmed_content = trim::trim_end_regexp(self.content.as_str(), pat)?.to_owned();
+    self.content = trimmed_content.to_owned();
+    if trimmed_content.len() > 0 {
+      return Ok(());
+    }
+
+    let trimmed_intro = trim::trim_end_regexp(self.outro.as_str(), pat)?.to_owned();
+    self.intro = trimmed_intro.to_owned();
+
+    Ok(())
+  }
+
   pub fn each_next<F>(chunk: Rc<RefCell<Chunk>>, mut f: F)
   where
-    F: FnMut(Rc<RefCell<Chunk>>),
+    F: FnMut(Rc<RefCell<Chunk>>) -> bool,
   {
     let mut curr = Some(chunk);
     while let Some(value) = curr {
-      f(Rc::clone(&value));
+      let should_yield = f(Rc::clone(&value));
+      if should_yield {
+        break;
+      }
       curr = value.borrow().next.as_ref().map(Rc::clone);
+    }
+  }
+
+  pub fn each_prev<F>(chunk: Rc<RefCell<Chunk>>, mut f: F)
+  where
+    F: FnMut(Rc<RefCell<Chunk>>) -> bool,
+  {
+    let mut curr = Some(chunk);
+    while let Some(value) = curr {
+      let should_yield = f(Rc::clone(&value));
+      if should_yield {
+        break;
+      }
+      curr = value.borrow().prev.as_ref().map(Rc::clone);
     }
   }
 
@@ -85,7 +144,7 @@ impl Chunk {
     /* Outro of the current chunk will be moved to the newly created one
      * and we need to reset the current one
      */
-    borrowed_chunk.outro = String::from("");
+    borrowed_chunk.outro = String::default();
 
     next_chunk.borrow_mut().outro = borrowed_chunk.outro.to_owned();
     next_chunk.borrow_mut().next = {
@@ -109,15 +168,3 @@ impl ToString for Chunk {
     format!("{}{}{}", self.intro, self.content, self.outro)
   }
 }
-
-// impl Iterator for Chunk {
-//   type Item = Rc<RefCell<Self>>;
-//
-//   fn next(&mut self) -> Option<Self::Item> {
-//     if let Some(ref next) = self.next {
-//       Some(Rc::clone(next))
-//     } else {
-//       None
-//     }
-//   }
-// }

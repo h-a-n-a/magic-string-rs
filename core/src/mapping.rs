@@ -29,7 +29,7 @@ impl Mapping {
     }
   }
 
-  pub fn add_unedited_chunk(
+  pub fn add_chunk(
     &mut self,
     chunk: Rc<RefCell<Chunk>>,
     (original_line, original_column): (u32, u32),

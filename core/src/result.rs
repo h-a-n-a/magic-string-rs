@@ -14,6 +14,10 @@ pub enum MagicStringErrorType {
   VlqUnexpectedEof,
   VlqInvalidBase64,
   VlqOverflow,
+
+  RegexSyntaxError,
+  RegexCompiledTooBig,
+  RegexUnknownError,
 }
 
 pub type Result<T = ()> = result::Result<T, Error>;
@@ -69,6 +73,17 @@ impl From<vlq::Error> for Error {
   }
 }
 
+impl From<regex::Error> for Error {
+  #[inline]
+  fn from(err: regex::Error) -> Self {
+    match err {
+      regex::Error::Syntax(_) => Error::new(MagicStringErrorType::RegexSyntaxError),
+      regex::Error::CompiledTooBig(_) => Error::new(MagicStringErrorType::RegexCompiledTooBig),
+      _ => Error::new(MagicStringErrorType::RegexUnknownError),
+    }
+  }
+}
+
 impl From<string::FromUtf8Error> for Error {
   #[inline]
   fn from(_: FromUtf8Error) -> Self {
@@ -90,6 +105,17 @@ impl From<Error> for napi::Error {
     let mut reason = String::from("[magic-string] ");
 
     match err.error_type {
+      MagicStringErrorType::IOError => {
+        reason.push_str("IO Error");
+      }
+      MagicStringErrorType::UTF8Error => {
+        reason.push_str("UTF8 Encoding Error");
+      }
+
+      MagicStringErrorType::JSONSerializationError => {
+        reason.push_str("JSON Serialization Error");
+      }
+
       MagicStringErrorType::VlqUnexpectedEof => {
         reason.push_str("Vlq Unexpected Eof");
       }
@@ -99,14 +125,15 @@ impl From<Error> for napi::Error {
       MagicStringErrorType::VlqOverflow => {
         reason.push_str("Vlq Overflow");
       }
-      MagicStringErrorType::IOError => {
-        reason.push_str("IO Error");
+
+      MagicStringErrorType::RegexSyntaxError => {
+        reason.push_str("Regex Syntax Error");
       }
-      MagicStringErrorType::UTF8Error => {
-        reason.push_str("UTF8 Encoding Error");
+      MagicStringErrorType::RegexCompiledTooBig => {
+        reason.push_str("Regex Compiled Too Big");
       }
-      MagicStringErrorType::JSONSerializationError => {
-        reason.push_str("JSON Serialization Error");
+      MagicStringErrorType::RegexUnknownError => {
+        reason.push_str("Regex Unknown Error");
       }
     }
 

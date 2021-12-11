@@ -1,5 +1,7 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc, string::ToString};
 
+use crate::utils::trim;
+
 #[cfg(feature = "node-api")]
 use napi_derive::napi;
 
@@ -30,6 +32,21 @@ pub struct GenerateDecodedMapOptions {
   pub include_content: bool,
 }
 
+#[cfg(feature = "node-api")]
+#[napi(object)]
+#[derive(Debug, Default, Clone)]
+pub struct OverwriteOptions {
+  pub store_name: bool,
+  pub content_only: bool,
+}
+
+#[cfg(not(feature = "node-api"))]
+#[derive(Debug, Default, Clone)]
+pub struct OverwriteOptions {
+  pub store_name: bool,
+  pub content_only: bool,
+}
+
 #[derive(Debug, Serialize)]
 pub struct DecodedMap {
   pub file: Option<String>,
@@ -45,9 +62,7 @@ pub struct MagicString {
   original_str: String,
   original_str_locator: Locator,
 
-  // prefix
   intro: String,
-  // suffix
   outro: String,
 
   chunk_by_start: HashMap<u32, Rc<RefCell<Chunk>>>,
@@ -77,7 +92,6 @@ impl MagicString {
     MagicString {
       original_str: String::from(str),
 
-      // prepends and appends are followed with current instance or chunk
       intro: String::default(),
       outro: String::default(),
 
@@ -136,7 +150,7 @@ impl MagicString {
 
   /// ## Prepend left
   ///
-  /// Same as `s.append_left(...)`, except that the inserted content will go before any previous appends or prepends at index.
+  /// Same as `s.append_left(...)`, except that the inserted content will go before any previous appends or prepends at index. Returns `self`.
   pub fn prepend_left(&mut self, index: u32, str: &str) -> Result<&mut Self> {
     self._split_at_index(index);
 
@@ -151,7 +165,7 @@ impl MagicString {
 
   /// ## Prepend right
   ///
-  /// Same as `s.append_right(...)`, except that the inserted content will go before any previous appends or prepends at index.
+  /// Same as `s.append_right(...)`, except that the inserted content will go before any previous appends or prepends at index. Returns `self`.
   pub fn prepend_right(&mut self, index: u32, str: &str) -> Result<&mut Self> {
     self._split_at_index(index);
 
@@ -167,7 +181,7 @@ impl MagicString {
   /// ## Append left
   ///
   /// Appends the specified content at the index in the original string.
-  /// If a range ending with index is subsequently moved, the insert will be moved with it. Returns this. See also `s.prepend_left(...)`.
+  /// If a range ending with index is subsequently moved, the insert will be moved with it. Returns this. See also `s.prepend_left(...)`. Returns `self`.
   pub fn append_left(&mut self, index: u32, str: &str) -> Result<&mut Self> {
     self._split_at_index(index);
 
@@ -183,7 +197,7 @@ impl MagicString {
   /// ## Append right
   ///
   /// Appends the specified content at the index in the original string.
-  /// If a range starting with index is subsequently moved, the insert will be moved with it. Returns this. See also `s.prepend_right(...)`.
+  /// If a range starting with index is subsequently moved, the insert will be moved with it. Returns this. See also `s.prepend_right(...)`. Returns `self`.
   pub fn append_right(&mut self, index: u32, str: &str) -> Result<&mut Self> {
     self._split_at_index(index);
 
@@ -194,6 +208,195 @@ impl MagicString {
     };
 
     Ok(self)
+  }
+
+  /// ## Overwrite
+  ///
+  /// Replaces the characters from start to end with content. The same restrictions as s.remove() apply. Returns `self`.
+  /// The fourth argument is optional.
+  /// - It can have a `store_name` property — if true, the original name will be stored for later inclusion in a sourcemap's names array
+  /// - and a `content_only` property which determines whether only the content is overwritten, or anything that was appended/prepended to the range as well.
+  pub fn overwrite(
+    &mut self,
+    start: u32,
+    end: u32,
+    content: &str,
+    options: Option<OverwriteOptions>,
+  ) -> Result<&mut Self> {
+    todo!()
+  }
+
+  /// ## Trim start and end
+  ///
+  /// Trims content matching `pattern` (defaults to '\s', i.e. whitespace) from the start and the end. Returns `self`.
+  /// Note that in Rust, '\t'(char) and "\\t"(string) are different types, whereas they are regarded the same pattern in Regex, which means you can pass eiter one of them to `pattern` argument.
+  ///
+  /// Example:
+  /// ```
+  /// use magic_string::MagicString;
+  ///
+  /// let mut s = MagicString::new("  abc  ");
+  /// s.trim(None);
+  ///
+  /// assert_eq!(s.to_string(), "abc");
+  ///
+  /// let mut s = MagicString::new("\t\t abc \t\t");
+  /// s.trim(Some("\t"));
+  ///
+  /// assert_eq!(s.to_string(), " abc ");
+  ///
+  /// let mut s = MagicString::new("\t\t abc \t\t");
+  /// s.trim(Some("\t|\\s"));
+  ///
+  /// assert_eq!(s.to_string(), "abc");
+  /// ```
+  pub fn trim(&mut self, pattern: Option<&str>) -> Result<&mut Self> {
+    self.trim_start(pattern)?.trim_end(pattern)
+  }
+
+  /// ## Trim start
+  ///
+  /// Trims content matching `pattern` (defaults to '\s', i.e. whitespace) from the start. Returns `self`.
+  ///
+  /// Example:
+  /// ```
+  /// use magic_string::MagicString;
+  ///
+  /// let mut s = MagicString::new("  abc");
+  /// s.trim_start(None);
+  ///
+  /// assert_eq!(s.to_string(), "abc");
+  ///
+  /// let mut s = MagicString::new("  abc");
+  /// s.prepend("  ");
+  /// s.trim_start(None);
+  ///
+  /// assert_eq!(s.to_string(), "abc");
+  ///
+  /// let mut s = MagicString::new("  abc");
+  /// s.prepend("\t\ta");
+  /// s.trim_start(Some("\t"));
+  ///
+  /// assert_eq!(s.to_string(), "a  abc");
+  /// ```
+  pub fn trim_start(&mut self, pattern: Option<&str>) -> Result<&mut Self> {
+    let pattern = pattern.unwrap_or("\\s");
+
+    self.intro = trim::trim_start_regexp(self.intro.as_str(), pattern)?.to_owned();
+
+    if self.intro.len() > 0 {
+      return Ok(self);
+    }
+
+    Chunk::each_next(Rc::clone(&self.first_chunk), |chunk| {
+      self.last_searched_chunk = Rc::clone(&chunk);
+      chunk
+        .borrow_mut()
+        .trim_start_regexp(pattern)
+        .expect("[magic-string] Regexp Error");
+
+      !(chunk.borrow_mut().to_string().len() > 0)
+    });
+
+    if self.last_searched_chunk == self.last_chunk
+      && (self.last_chunk.borrow().to_string().len() == 0)
+    {
+      self.outro = trim::trim_start_regexp(self.outro.as_str(), pattern)?.to_owned()
+    }
+
+    Ok(self)
+  }
+
+  /// ## Trim end
+  ///
+  /// Trims content matching `pattern` (defaults to '\s', i.e. whitespace) from the end. Returns `self`.
+  ///
+  /// Example:
+  /// ```
+  /// use magic_string::MagicString;
+  ///
+  /// let mut s = MagicString::new("abc  ");
+  /// s.trim_end(None);
+  ///
+  /// assert_eq!(s.to_string(), "abc");
+  ///
+  /// let mut s = MagicString::new("abc  ");
+  /// s.append("  ");
+  /// s.trim_end(None);
+  ///
+  /// assert_eq!(s.to_string(), "abc");
+  ///
+  /// let mut s = MagicString::new("abc");
+  /// s.append("  a\t\t");
+  /// s.trim_end(Some("\t"));
+  ///
+  /// assert_eq!(s.to_string(), "abc  a");
+  pub fn trim_end(&mut self, pattern: Option<&str>) -> Result<&mut Self> {
+    let pattern = pattern.unwrap_or("\\s");
+
+    self.outro = trim::trim_end_regexp(self.outro.as_str(), pattern)?.to_owned();
+
+    if self.outro.len() > 0 {
+      return Ok(self);
+    }
+
+    Chunk::each_prev(Rc::clone(&self.last_chunk), |chunk| {
+      self.last_searched_chunk = Rc::clone(&chunk);
+      chunk
+        .borrow_mut()
+        .trim_end_regexp(pattern)
+        .expect("[magic-string] Regexp Error");
+
+      !(chunk.borrow_mut().to_string().len() > 0)
+    });
+
+    if self.last_searched_chunk == self.first_chunk
+      && (self.first_chunk.borrow().to_string().len() == 0)
+    {
+      self.intro = trim::trim_end_regexp(self.intro.as_str(), pattern)?.to_owned()
+    }
+
+    Ok(self)
+  }
+
+  /// ## Trim lines
+  ///
+  /// Removes empty lines from the start and end. Returns `self`.
+  ///
+  /// Example:
+  /// ```
+  /// use magic_string::MagicString;
+  ///
+  /// let mut s = MagicString::new("\n\nabc\n");
+  /// s.append("\n");
+  /// s.prepend("\n");
+  ///
+  /// s.trim_lines();
+  ///
+  /// assert_eq!(s.to_string(), "abc")
+  /// ```
+  pub fn trim_lines(&mut self) -> Result<&mut Self> {
+    self.trim_start(Some("\n"))?.trim_end(Some("\n"))
+  }
+
+  /// ## Is empty
+  ///
+  /// Returns `true` if the resulting source is empty (disregarding white space).
+  ///
+  /// Example:
+  /// ```
+  /// use magic_string::MagicString;
+  ///
+  /// let mut s = MagicString::new("");
+  ///
+  /// assert_eq!(s.is_empty(), true);
+  ///
+  /// let mut s = MagicString::new("abc");
+  ///
+  /// assert_eq!(s.is_empty(), false);
+  /// ```
+  pub fn is_empty(&mut self) -> bool {
+    self.to_string().trim().is_empty()
   }
 
   /// ## Generate decoded map
@@ -226,7 +429,8 @@ impl MagicString {
 
     Chunk::each_next(Rc::clone(&self.first_chunk), |chunk| {
       let loc = locator.locate(chunk.borrow().start);
-      map.add_unedited_chunk(Rc::clone(&chunk), loc);
+      map.add_chunk(Rc::clone(&chunk), loc);
+      true
     });
 
     map.advance(self.outro.as_str());
@@ -320,12 +524,25 @@ impl MagicString {
 }
 
 impl ToString for MagicString {
+  /// ## To string
+  ///
+  /// Returns a modified string.
+  ///
+  /// Example:
+  /// ```
+  /// use magic_string::MagicString;
+  ///
+  /// let mut s = MagicString::new("abc");
+  ///
+  /// assert_eq!(s.to_string(), "abc");
+  /// ```
   fn to_string(&self) -> String {
     let mut str = self.intro.to_owned();
 
     Chunk::each_next(Rc::clone(&self.first_chunk), |chunk| {
       let chunk = chunk.borrow();
       str = format!("{}{}{}{}", str, chunk.intro, chunk.content, chunk.outro);
+      true
     });
 
     format!("{}{}", str, self.outro)
