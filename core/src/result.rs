@@ -4,7 +4,7 @@ use std::{
   string::{self, FromUtf8Error},
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MagicStringErrorType {
   IOError,
   UTF8Error,
@@ -22,14 +22,25 @@ pub enum MagicStringErrorType {
   MagicStringOutOfRangeError,
   MagicStringCrossChunkError,
   MagicStringDoubleSplitError,
+
+  Default,
 }
 
 pub type Result<T = ()> = result::Result<T, Error>;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Error {
   pub error_type: MagicStringErrorType,
   pub reason: Option<String>,
+}
+
+impl Default for Error {
+  fn default() -> Self {
+    Self {
+      error_type: MagicStringErrorType::Default,
+      reason: None,
+    }
+  }
 }
 
 impl Error {
@@ -148,6 +159,11 @@ impl From<Error> for napi::Error {
       }
       MagicStringErrorType::MagicStringDoubleSplitError => {
         reason.push_str("Magic String Double Split Error");
+      }
+      MagicStringErrorType::Default => {
+        reason.push_str(
+          "Default Error should never been thrown to the user end, please file an issue.",
+        );
       }
     }
 

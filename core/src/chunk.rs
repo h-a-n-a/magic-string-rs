@@ -74,7 +74,7 @@ impl Chunk {
 
   pub fn trim_end_regexp(&mut self, pat: &str) -> Result {
     let trimmed_outro = trim::trim_end_regexp(self.outro.as_str(), pat)?.to_owned();
-    self.intro = trimmed_outro.to_owned();
+    self.outro = trimmed_outro.to_owned();
 
     if trimmed_outro.len() > 0 {
       return Ok(());
@@ -86,7 +86,7 @@ impl Chunk {
       return Ok(());
     }
 
-    let trimmed_intro = trim::trim_end_regexp(self.outro.as_str(), pat)?.to_owned();
+    let trimmed_intro = trim::trim_end_regexp(self.intro.as_str(), pat)?.to_owned();
     self.intro = trimmed_intro.to_owned();
 
     Ok(())
