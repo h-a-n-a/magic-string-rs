@@ -18,6 +18,10 @@ pub enum MagicStringErrorType {
   RegexSyntaxError,
   RegexCompiledTooBig,
   RegexUnknownError,
+
+  MagicStringOutOfRangeError,
+  MagicStringCrossChunkError,
+  MagicStringDoubleSplitError,
 }
 
 pub type Result<T = ()> = result::Result<T, Error>;
@@ -134,6 +138,16 @@ impl From<Error> for napi::Error {
       }
       MagicStringErrorType::RegexUnknownError => {
         reason.push_str("Regex Unknown Error");
+      }
+
+      MagicStringErrorType::MagicStringOutOfRangeError => {
+        reason.push_str("Magic String Out of Range Error");
+      }
+      MagicStringErrorType::MagicStringCrossChunkError => {
+        reason.push_str("Magic String Cross Chunk Error");
+      }
+      MagicStringErrorType::MagicStringDoubleSplitError => {
+        reason.push_str("Magic String Double Split Error");
       }
     }
 

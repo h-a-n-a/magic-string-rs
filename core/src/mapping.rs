@@ -171,18 +171,18 @@ mod tests {
   fn absolute_mapping_to_relative_mapping() {
     let mut mapping = Mapping::new();
 
-    mapping.absolute_mappings.push(vec![vec![3, 0, 0, 0]]);
-    mapping.absolute_mappings.push(vec![vec![0, 0, 1, 0]]);
-    mapping.absolute_mappings.push(vec![vec![0, 0, 2, 0]]);
+    mapping.absolute_mappings.push(vec![vec![3, 1, 0, 1]]);
+    mapping.absolute_mappings.push(vec![vec![4, 4, 1, 5]]);
+    mapping.absolute_mappings.push(vec![vec![0, 5, 2, 9]]);
 
     let decoded_mappings = mapping.get_decoded_mappings();
 
     assert_eq!(
       &decoded_mappings,
       &vec![
-        vec![vec![3, 0, 0, 0]],
-        vec![vec![0, 0, 1, 0]],
-        vec![vec![0, 0, 1, 0]],
+        vec![vec![3, 1, 0, 1]],
+        vec![vec![4, 3, 1, 4]],
+        vec![vec![0, 1, 1, 4]],
       ]
     )
   }

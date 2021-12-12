@@ -11,6 +11,7 @@ use crate::{
   result::Result,
   source_map::SourceMap,
   utils::locator::Locator,
+  Error, MagicStringErrorType,
 };
 
 #[cfg(feature = "node-api")]
@@ -36,14 +37,12 @@ pub struct GenerateDecodedMapOptions {
 #[napi(object)]
 #[derive(Debug, Default, Clone)]
 pub struct OverwriteOptions {
-  pub store_name: bool,
   pub content_only: bool,
 }
 
 #[cfg(not(feature = "node-api"))]
 #[derive(Debug, Default, Clone)]
 pub struct OverwriteOptions {
-  pub store_name: bool,
   pub content_only: bool,
 }
 
@@ -152,7 +151,7 @@ impl MagicString {
   ///
   /// Same as `s.append_left(...)`, except that the inserted content will go before any previous appends or prepends at index. Returns `self`.
   pub fn prepend_left(&mut self, index: u32, str: &str) -> Result<&mut Self> {
-    self._split_at_index(index);
+    self._split_at_index(index)?;
 
     if let Some(chunk) = self.chunk_by_end.get(&index) {
       chunk.borrow_mut().prepend_outro(str);
@@ -167,7 +166,7 @@ impl MagicString {
   ///
   /// Same as `s.append_right(...)`, except that the inserted content will go before any previous appends or prepends at index. Returns `self`.
   pub fn prepend_right(&mut self, index: u32, str: &str) -> Result<&mut Self> {
-    self._split_at_index(index);
+    self._split_at_index(index)?;
 
     if let Some(chunk) = self.chunk_by_start.get(&index) {
       chunk.borrow_mut().prepend_intro(str);
@@ -183,7 +182,7 @@ impl MagicString {
   /// Appends the specified content at the index in the original string.
   /// If a range ending with index is subsequently moved, the insert will be moved with it. Returns this. See also `s.prepend_left(...)`. Returns `self`.
   pub fn append_left(&mut self, index: u32, str: &str) -> Result<&mut Self> {
-    self._split_at_index(index);
+    self._split_at_index(index)?;
 
     if let Some(chunk) = self.chunk_by_end.get(&index) {
       chunk.borrow_mut().append_outro(str);
@@ -199,7 +198,7 @@ impl MagicString {
   /// Appends the specified content at the index in the original string.
   /// If a range starting with index is subsequently moved, the insert will be moved with it. Returns this. See also `s.prepend_right(...)`. Returns `self`.
   pub fn append_right(&mut self, index: u32, str: &str) -> Result<&mut Self> {
-    self._split_at_index(index);
+    self._split_at_index(index)?;
 
     if let Some(chunk) = self.chunk_by_start.get(&index) {
       chunk.borrow_mut().append_intro(str);
@@ -212,18 +211,104 @@ impl MagicString {
 
   /// ## Overwrite
   ///
-  /// Replaces the characters from start to end with content. The same restrictions as s.remove() apply. Returns `self`.
+  /// Replaces the characters from start to end with content. Returns `self`.
   /// The fourth argument is optional.
-  /// - It can have a `store_name` property — if true, the original name will be stored for later inclusion in a sourcemap's names array
   /// - and a `content_only` property which determines whether only the content is overwritten, or anything that was appended/prepended to the range as well.
+  ///
+  /// Example:
+  /// ```
+  /// use magic_string::{MagicString, OverwriteOptions};
+  ///
+  ///
+  /// let mut s = MagicString::new("abcdefg");
+  ///
+  /// s.overwrite(1,4, "z", OverwriteOptions::default());
+  /// assert_eq!(s.to_string(), "azefg")
+  ///
+  /// ```
+  ///
   pub fn overwrite(
     &mut self,
-    start: u32,
-    end: u32,
+    start: i64,
+    end: i64,
     content: &str,
-    options: Option<OverwriteOptions>,
+    options: OverwriteOptions,
   ) -> Result<&mut Self> {
-    todo!()
+    let content_only = options.content_only;
+    let start = if start < 0 {
+      start + self.original_str.len() as i64
+    } else {
+      start
+    };
+    let end = if end < 0 {
+      end + self.original_str.len() as i64
+    } else {
+      end
+    };
+
+    if start < 0
+      || end < 0
+      || start > self.original_str.len() as i64
+      || end > self.original_str.len() as i64
+    {
+      return Err(Error::new_with_reason(
+        MagicStringErrorType::MagicStringOutOfRangeError,
+        "Start or end out of range",
+      ));
+    }
+
+    let start = start as u32;
+    let end = end as u32;
+
+    if start == end {
+      return Err(Error::new_with_reason(
+        MagicStringErrorType::MagicStringOutOfRangeError,
+        "Start and end may not be the same. Please consider using `append_(left|right)` or `prepend_(left|right)` instead",
+      ));
+    }
+
+    self._split_at_index(start)?;
+    self._split_at_index(end)?;
+
+    let start_chunk: Option<Rc<RefCell<Chunk>>> = self.chunk_by_start.get(&start).map(Rc::clone);
+    let end_chunk: Option<Rc<RefCell<Chunk>>> = self.chunk_by_end.get(&end).map(Rc::clone);
+
+    if let Some(start_chunk) = start_chunk {
+      if start_chunk.borrow().end < end
+        && (start_chunk.borrow().next
+          != self
+            .chunk_by_start
+            .get(&start_chunk.borrow().end)
+            .map(Rc::clone))
+      {
+        return Err(Error::new_with_reason(
+          MagicStringErrorType::MagicStringCrossChunkError,
+          "unable to edit overlapped chunks",
+        ));
+      }
+
+      start_chunk.borrow_mut().content = content.to_owned();
+      if !content_only {
+        start_chunk.borrow_mut().intro = String::default();
+        start_chunk.borrow_mut().outro = String::default();
+      }
+
+      Chunk::each_next(Rc::clone(&start_chunk), |chunk| {
+        if end_chunk.is_some() && end_chunk == Some(Rc::clone(&chunk)) {
+          return true;
+        }
+
+        chunk.borrow_mut().content = String::default();
+        if !content_only {
+          chunk.borrow_mut().intro = String::default();
+          chunk.borrow_mut().outro = String::default();
+        }
+
+        false
+      })
+    }
+
+    Ok(self)
   }
 
   /// ## Trim start and end
@@ -295,7 +380,7 @@ impl MagicString {
         .trim_start_regexp(pattern)
         .expect("[magic-string] Regexp Error");
 
-      !(chunk.borrow_mut().to_string().len() > 0)
+      chunk.borrow().to_string().len() > 0
     });
 
     if self.last_searched_chunk == self.last_chunk
@@ -347,7 +432,7 @@ impl MagicString {
         .trim_end_regexp(pattern)
         .expect("[magic-string] Regexp Error");
 
-      !(chunk.borrow_mut().to_string().len() > 0)
+      chunk.borrow().to_string().len() > 0
     });
 
     if self.last_searched_chunk == self.first_chunk
@@ -430,7 +515,7 @@ impl MagicString {
     Chunk::each_next(Rc::clone(&self.first_chunk), |chunk| {
       let loc = locator.locate(chunk.borrow().start);
       map.add_chunk(Rc::clone(&chunk), loc);
-      true
+      false
     });
 
     map.advance(self.outro.as_str());
@@ -476,10 +561,10 @@ impl MagicString {
     SourceMap::new_from_decoded(decoded_map)
   }
 
-  fn _split_at_index(&mut self, index: u32) {
+  fn _split_at_index(&mut self, index: u32) -> Result {
     if self.chunk_by_end.contains_key(&index) || self.chunk_by_start.contains_key(&index) {
       // early bail-out if it's already split
-      return;
+      return Ok(());
     }
 
     let chunk = Rc::clone(&self.last_searched_chunk);
@@ -490,8 +575,8 @@ impl MagicString {
     while let Some(c) = curr {
       if c.borrow().contains(index) {
         // FIXME: use static method to satisfy the borrow checker
-        self._split_chunk_at_index(Rc::clone(c), index);
-        return;
+        self._split_chunk_at_index(Rc::clone(c), index)?;
+        return Ok(());
       } else {
         curr = {
           if search_forward {
@@ -502,9 +587,16 @@ impl MagicString {
         }
       }
     }
+
+    Ok(())
   }
 
-  fn _split_chunk_at_index(&mut self, chunk: Rc<RefCell<Chunk>>, index: u32) {
+  fn _split_chunk_at_index(&mut self, chunk: Rc<RefCell<Chunk>>, index: u32) -> Result {
+    if chunk.borrow().is_content_edited() {
+      return Err(Error::new(
+        MagicStringErrorType::MagicStringDoubleSplitError,
+      ));
+    }
     let new_chunk = Chunk::split(Rc::clone(&chunk), index);
 
     let new_chunk_original = new_chunk.borrow();
@@ -520,6 +612,8 @@ impl MagicString {
     }
 
     self.last_searched_chunk = Rc::clone(&chunk);
+
+    Ok(())
   }
 }
 
@@ -542,7 +636,7 @@ impl ToString for MagicString {
     Chunk::each_next(Rc::clone(&self.first_chunk), |chunk| {
       let chunk = chunk.borrow();
       str = format!("{}{}{}{}", str, chunk.intro, chunk.content, chunk.outro);
-      true
+      false
     });
 
     format!("{}{}", str, self.outro)

@@ -26,8 +26,8 @@ impl Chunk {
       original_str: String::from(content),
       content: String::from(content),
 
-      intro: String::from(""),
-      outro: String::from(""),
+      intro: String::default(),
+      outro: String::default(),
 
       next: None,
       prev: None,
@@ -90,6 +90,10 @@ impl Chunk {
     self.intro = trimmed_intro.to_owned();
 
     Ok(())
+  }
+
+  pub fn is_content_edited(&self) -> bool {
+    self.original_str.len() != self.content.len() || self.original_str != self.content
   }
 
   pub fn each_next<F>(chunk: Rc<RefCell<Chunk>>, mut f: F)

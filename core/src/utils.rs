@@ -1,4 +1,5 @@
 pub mod locator {
+  #[allow(dead_code)]
   #[derive(Debug, Clone)]
   pub struct Locator {
     original_lines: Vec<String>,
@@ -71,8 +72,9 @@ pub mod locator {
 }
 
 pub mod trim {
-  use crate::Result;
   use regex::Regex;
+
+  use crate::Result;
 
   pub fn trim_start_regexp<'a>(s: &'a str, reg_pat: &'a str) -> Result<&'a str> {
     if s.len() == 0 {
