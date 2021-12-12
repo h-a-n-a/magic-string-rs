@@ -14,7 +14,7 @@
 
 <br />
 
-## Installation
+## 🔧 Installation
 
 ### Rust
 
@@ -90,7 +90,12 @@ Finished 2 cases!
 - [x] prependRight
 - [x] appendLeft
 - [x] appendRight
-- [ ] overwrite
+- [x] overwrite
+- [x] trim
+- [x] trimStart
+- [x] trimEnd
+- [x] trimLines
+- [x] isEmpty
 - [ ] move
 - [ ] indent
 - [ ] addSourcemapLocation
@@ -98,11 +103,6 @@ Finished 2 cases!
 - [ ] remove
 - [ ] slice
 - [ ] snip
-- [ ] trim
-- [ ] trimStart
-- [ ] trimEnd
-- [ ] trimLines
-- [ ] isEmpty
 
 
 ## Credits
