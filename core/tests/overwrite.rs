@@ -17,9 +17,16 @@ mod overwrite {
   fn should_panic_if_overlapping_replacements_are_attempted() {
     let mut s = MagicString::new("abcdefghijkl");
 
-    s.overwrite(7, 11, "xx", OverwriteOptions::default());
-    s.overwrite(8, 12, "yy", OverwriteOptions::default())
-      .expect_err("Error");
+    match s.overwrite(7, 11, "xx", OverwriteOptions::default()) {
+      _ => {}
+    }
+
+    match s.overwrite(8, 12, "yy", OverwriteOptions::default()) {
+      Err(_) => {
+        panic!("Error")
+      }
+      _ => {}
+    }
   }
 
   #[test]
@@ -78,6 +85,49 @@ mod overwrite {
     let s_ptr = &s as *const _;
 
     assert_eq!(s_ptr, result_ptr);
+
+    Ok(())
+  }
+
+  #[test]
+  fn replaces_interior_inserts() -> Result {
+    let mut s = MagicString::new("abcdefghijkl");
+
+    s.append_left(1, "&")?;
+    s.prepend_right(1, "^")?;
+    s.append_left(3, "!")?;
+    s.prepend_right(3, "?")?;
+    s.overwrite(1, 3, "...", OverwriteOptions::default())?;
+
+    assert_eq!(s.to_string(), "a&...?defghijkl");
+
+    Ok(())
+  }
+
+  #[test]
+  fn preserves_interior_inserts_with_content_only_true() -> Result {
+    let mut s = MagicString::new("abcdefghijkl");
+
+    s.append_left(1, "&")?;
+    s.prepend_right(1, "^")?;
+    s.append_left(3, "!")?;
+    s.prepend_right(3, "?")?;
+    s.overwrite(1, 3, "...", OverwriteOptions { content_only: true })?;
+
+    assert_eq!(s.to_string(), "a&^...!?defghijkl");
+
+    Ok(())
+  }
+
+  #[test]
+  fn allows_later_insertions_at_the_end() -> Result {
+    let mut s = MagicString::new("abcdefg");
+
+    s.append_left(4, "(")?;
+    s.overwrite(2, 7, "", OverwriteOptions::default())?;
+    s.append_left(7, "h")?;
+
+    assert_eq!(s.to_string(), "abh");
 
     Ok(())
   }

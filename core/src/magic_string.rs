@@ -263,7 +263,7 @@ impl MagicString {
     if start == end {
       return Err(Error::new_with_reason(
         MagicStringErrorType::MagicStringOutOfRangeError,
-        "Start and end may not be the same. Please consider using `append_(left|right)` or `prepend_(left|right)` instead",
+        "Start and end should not be the same. Please consider using `append_(left|right)` or `prepend_(left|right)` instead",
       ));
     }
 
@@ -287,14 +287,23 @@ impl MagicString {
         ));
       }
 
-      start_chunk.borrow_mut().content = content.to_owned();
-      if !content_only {
-        start_chunk.borrow_mut().intro = String::default();
-        start_chunk.borrow_mut().outro = String::default();
-      }
-
       Chunk::each_next(Rc::clone(&start_chunk), |chunk| {
-        if end_chunk.is_some() && end_chunk == Some(Rc::clone(&chunk)) {
+        if start_chunk == chunk {
+          start_chunk.borrow_mut().content = content.to_owned();
+          if !content_only {
+            start_chunk.borrow_mut().intro = String::default();
+            start_chunk.borrow_mut().outro = String::default();
+          }
+
+          return false;
+        }
+
+        if end_chunk.is_some()
+          && chunk.borrow().start
+            >= (end_chunk.as_ref().map(Rc::clone).unwrap() as Rc<RefCell<Chunk>>)
+              .borrow()
+              .end
+        {
           return true;
         }
 
