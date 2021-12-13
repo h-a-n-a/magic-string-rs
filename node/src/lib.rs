@@ -71,19 +71,19 @@ impl MagicString {
 
   #[napi]
   pub fn trim(&mut self, pattern: Option<String>) -> Result<&Self> {
-    self.0.trim(pattern.as_ref().map(|p| p.as_str()))?;
+    self.0.trim(pattern.as_deref())?;
     Ok(self)
   }
 
   #[napi]
   pub fn trim_start(&mut self, pattern: Option<String>) -> Result<&Self> {
-    self.0.trim_start(pattern.as_ref().map(|p| p.as_str()))?;
+    self.0.trim_start(pattern.as_deref())?;
     Ok(self)
   }
 
   #[napi]
   pub fn trim_end(&mut self, pattern: Option<String>) -> Result<&Self> {
-    self.0.trim_end(pattern.as_ref().map(|p| p.as_str()))?;
+    self.0.trim_end(pattern.as_deref())?;
     Ok(self)
   }
 
@@ -124,6 +124,7 @@ impl MagicString {
   }
 
   #[napi]
+  #[allow(clippy::inherent_to_string)]
   pub fn to_string(&self) -> String {
     self.0.to_string()
   }

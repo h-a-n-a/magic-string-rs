@@ -287,7 +287,7 @@ impl MagicString {
         ));
       }
 
-      Chunk::each_next(Rc::clone(&start_chunk), |chunk| {
+      Chunk::try_each_next(Rc::clone(&start_chunk), |chunk| {
         if start_chunk == chunk {
           start_chunk.borrow_mut().content = content.to_owned();
           if !content_only {
@@ -295,7 +295,7 @@ impl MagicString {
             start_chunk.borrow_mut().outro = String::default();
           }
 
-          return false;
+          return Ok(false);
         }
 
         if end_chunk.is_some()
@@ -304,7 +304,7 @@ impl MagicString {
               .borrow()
               .end
         {
-          return true;
+          return Ok(true);
         }
 
         chunk.borrow_mut().content = String::default();
@@ -313,8 +313,8 @@ impl MagicString {
           chunk.borrow_mut().outro = String::default();
         }
 
-        false
-      })
+        Ok(false)
+      })?
     }
 
     Ok(self)
@@ -378,31 +378,27 @@ impl MagicString {
 
     self.intro = trim::trim_start_regexp(self.intro.as_str(), pattern)?.to_owned();
 
-    if self.intro.len() > 0 {
+    if !self.intro.is_empty() {
       return Ok(self);
     }
 
-    let mut error = Error::default();
+    let error = Error::default();
 
-    Chunk::each_next(Rc::clone(&self.first_chunk), |chunk| {
+    Chunk::try_each_next(Rc::clone(&self.first_chunk), |chunk| {
       self.last_searched_chunk = Rc::clone(&chunk);
-      match chunk.borrow_mut().trim_start_regexp(pattern) {
-        Err(e) => {
-          error = e;
-          return true;
-        }
-        _ => (),
+      if let Err(e) = chunk.borrow_mut().trim_start_regexp(pattern) {
+        return Err(e);
       }
 
-      chunk.borrow().to_string().len() > 0
-    });
+      Ok(!chunk.borrow().to_string().is_empty())
+    })?;
 
     if error != Error::default() {
       return Err(error);
     }
 
     if self.last_searched_chunk == self.last_chunk
-      && (self.last_chunk.borrow().content.to_string().len() == 0)
+      && self.last_chunk.borrow().content.to_string().is_empty()
     {
       self.outro = trim::trim_start_regexp(self.outro.as_str(), pattern)?.to_owned()
     }
@@ -439,31 +435,21 @@ impl MagicString {
 
     self.outro = trim::trim_end_regexp(self.outro.as_str(), pattern)?.to_owned();
 
-    if self.outro.len() > 0 {
+    if !self.outro.is_empty() {
       return Ok(self);
     }
 
-    let mut error = Error::default();
-
-    Chunk::each_prev(Rc::clone(&self.last_chunk), |chunk| {
+    Chunk::try_each_prev(Rc::clone(&self.last_chunk), |chunk| {
       self.last_searched_chunk = Rc::clone(&chunk);
-      match chunk.borrow_mut().trim_end_regexp(pattern) {
-        Err(e) => {
-          error = e;
-          return true;
-        }
-        _ => (),
+      if let Err(e) = chunk.borrow_mut().trim_end_regexp(pattern) {
+        return Err(e);
       }
 
-      chunk.borrow().to_string().len() > 0
-    });
-
-    if error != Error::default() {
-      return Err(error);
-    }
+      Ok(!chunk.borrow().to_string().is_empty())
+    })?;
 
     if self.last_searched_chunk == self.first_chunk
-      && (self.first_chunk.borrow().content.to_string().len() == 0)
+      && self.first_chunk.borrow().content.to_string().is_empty()
     {
       self.intro = trim::trim_end_regexp(self.intro.as_str(), pattern)?.to_owned()
     }
@@ -507,7 +493,7 @@ impl MagicString {
   ///
   /// assert_eq!(s.is_empty(), false);
   /// ```
-  pub fn is_empty(&mut self) -> bool {
+  pub fn is_empty(&self) -> bool {
     self.to_string().trim().is_empty()
   }
 
@@ -546,11 +532,11 @@ impl MagicString {
 
     map.advance(self.intro.as_str());
 
-    Chunk::each_next(Rc::clone(&self.first_chunk), |chunk| {
+    Chunk::try_each_next(Rc::clone(&self.first_chunk), |chunk| {
       let loc = locator.locate(chunk.borrow().start);
       map.add_chunk(Rc::clone(&chunk), loc);
-      false
-    });
+      Ok(false)
+    })?;
 
     map.advance(self.outro.as_str());
 
@@ -608,8 +594,8 @@ impl MagicString {
     let mut curr = Some(&chunk);
     while let Some(c) = curr {
       if c.borrow().contains(index) {
-        // FIXME: use static method to satisfy the borrow checker
-        self._split_chunk_at_index(Rc::clone(c), index)?;
+        let cloned_self = Rc::clone(c);
+        self._split_chunk_at_index(cloned_self, index)?;
         return Ok(());
       } else {
         curr = {
@@ -667,10 +653,11 @@ impl ToString for MagicString {
   fn to_string(&self) -> String {
     let mut str = self.intro.to_owned();
 
-    Chunk::each_next(Rc::clone(&self.first_chunk), |chunk| {
+    Chunk::try_each_next(Rc::clone(&self.first_chunk), |chunk| {
       str = format!("{}{}", str, chunk.borrow().to_string());
-      false
-    });
+      Ok(false)
+    })
+    .unwrap();
 
     format!("{}{}", str, self.outro)
   }

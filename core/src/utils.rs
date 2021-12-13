@@ -77,7 +77,7 @@ pub mod trim {
   use crate::Result;
 
   pub fn trim_start_regexp<'a>(s: &'a str, reg_pat: &'a str) -> Result<&'a str> {
-    if s.len() == 0 {
+    if s.is_empty() {
       return Ok(s);
     }
 
@@ -98,7 +98,7 @@ pub mod trim {
   }
 
   pub fn trim_end_regexp<'a>(s: &'a str, reg_pat: &'a str) -> Result<&'a str> {
-    if s.len() == 0 {
+    if s.is_empty() {
       return Ok(s);
     }
 

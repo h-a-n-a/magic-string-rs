@@ -56,18 +56,18 @@ impl Chunk {
   pub fn trim_start_regexp(&mut self, pat: &str) -> Result {
     let trimmed_intro = trim::trim_start_regexp(self.intro.as_str(), pat)?.to_owned();
     self.intro = trimmed_intro.to_owned();
-    if trimmed_intro.len() > 0 {
+    if !trimmed_intro.is_empty() {
       return Ok(());
     }
 
     let trimmed_content = trim::trim_start_regexp(self.content.as_str(), pat)?.to_owned();
     self.content = trimmed_content.to_owned();
-    if trimmed_content.len() > 0 {
+    if !trimmed_content.is_empty() {
       return Ok(());
     }
 
     let trimmed_outro = trim::trim_start_regexp(self.outro.as_str(), pat)?.to_owned();
-    self.outro = trimmed_outro.to_owned();
+    self.outro = trimmed_outro;
 
     Ok(())
   }
@@ -76,18 +76,18 @@ impl Chunk {
     let trimmed_outro = trim::trim_end_regexp(self.outro.as_str(), pat)?.to_owned();
     self.outro = trimmed_outro.to_owned();
 
-    if trimmed_outro.len() > 0 {
+    if !trimmed_outro.is_empty() {
       return Ok(());
     }
 
     let trimmed_content = trim::trim_end_regexp(self.content.as_str(), pat)?.to_owned();
     self.content = trimmed_content.to_owned();
-    if trimmed_content.len() > 0 {
+    if !trimmed_content.is_empty() {
       return Ok(());
     }
 
     let trimmed_intro = trim::trim_end_regexp(self.intro.as_str(), pat)?.to_owned();
-    self.intro = trimmed_intro.to_owned();
+    self.intro = trimmed_intro;
 
     Ok(())
   }
@@ -96,32 +96,44 @@ impl Chunk {
     self.original_str.len() != self.content.len() || self.original_str != self.content
   }
 
-  pub fn each_next<F>(chunk: Rc<RefCell<Chunk>>, mut f: F)
+  pub fn try_each_next<F>(chunk: Rc<RefCell<Chunk>>, mut f: F) -> Result
   where
-    F: FnMut(Rc<RefCell<Chunk>>) -> bool,
+    F: FnMut(Rc<RefCell<Chunk>>) -> Result<bool>,
   {
     let mut curr = Some(chunk);
     while let Some(value) = curr {
-      let should_yield = f(Rc::clone(&value));
-      if should_yield {
-        break;
+      match f(Rc::clone(&value)) {
+        Ok(should_yield) => {
+          if should_yield {
+            break;
+          }
+        }
+        Err(e) => {
+          return Err(e);
+        }
       }
       curr = value.borrow().next.as_ref().map(Rc::clone);
     }
+    Ok(())
   }
 
-  pub fn each_prev<F>(chunk: Rc<RefCell<Chunk>>, mut f: F)
+  pub fn try_each_prev<F>(chunk: Rc<RefCell<Chunk>>, mut f: F) -> Result
   where
-    F: FnMut(Rc<RefCell<Chunk>>) -> bool,
+    F: FnMut(Rc<RefCell<Chunk>>) -> Result<bool>,
   {
     let mut curr = Some(chunk);
     while let Some(value) = curr {
-      let should_yield = f(Rc::clone(&value));
-      if should_yield {
-        break;
+      match f(Rc::clone(&value)) {
+        Ok(should_yield) => {
+          if should_yield {
+            break;
+          }
+        }
+        Err(e) => return Err(e),
       }
       curr = value.borrow().prev.as_ref().map(Rc::clone);
     }
+    Ok(())
   }
 
   pub fn contains(&self, index: u32) -> bool {

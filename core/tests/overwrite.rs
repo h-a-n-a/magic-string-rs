@@ -17,16 +17,13 @@ mod overwrite {
   fn should_panic_if_overlapping_replacements_are_attempted() {
     let mut s = MagicString::new("abcdefghijkl");
 
-    match s.overwrite(7, 11, "xx", OverwriteOptions::default()) {
-      _ => {}
-    }
+    assert!(s
+      .overwrite(7, 11, "xx", OverwriteOptions::default())
+      .is_ok());
 
-    match s.overwrite(8, 12, "yy", OverwriteOptions::default()) {
-      Err(_) => {
-        panic!("Error")
-      }
-      _ => {}
-    }
+    assert!(s
+      .overwrite(8, 12, "yy", OverwriteOptions::default())
+      .is_ok());
   }
 
   #[test]

@@ -135,6 +135,7 @@ impl Mapping {
   }
 
   // generate encoded mappings, mappings are encoded relatively
+  #[allow(clippy::ptr_arg)]
   pub fn generate_encoded_mappings(decoded_mappings: &Mappings) -> Result<String> {
     let mut encoded_mappings: Vec<String> = vec![];
 
