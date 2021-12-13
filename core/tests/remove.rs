@@ -55,84 +55,109 @@ mod remove {
     s.remove(5, 9)?;
     assert_eq!(s.to_string(), "abcjkl");
 
-    // let mut s = MagicString::new("abcdefghijkl");
-    //
-    // s.remove(3, 7)?;
-    // s.remove(4, 6)?;
-    // assert_eq!(s.to_string(), "abchijkl");
+    let mut s = MagicString::new("abcdefghijkl");
+
+    s.remove(3, 7)?;
+    s.remove(4, 6)?;
+    assert_eq!(s.to_string(), "abchijkl");
 
     Ok(())
   }
+
+  #[test]
+  fn should_remove_overlapping_ranges_redux() -> Result {
+    let mut s = MagicString::new("abccde");
+
+    s.remove(2, 3)?; // c
+    s.remove(1, 3)?; // bc
+    assert_eq!(s.to_string(), "acde");
+
+    Ok(())
+  }
+
+  #[test]
+  fn should_remove_modified_ranges() -> Result {
+    let mut s = MagicString::new("abcdefghi");
+
+    s.overwrite(3, 6, "DEF", OverwriteOptions::default())?;
+    s.remove(2, 7)?; // cDEFg
+
+    // assert_eq!(s.slice(1, 8), "bh"); // To be implemented
+    assert_eq!(s.to_string(), "abhi");
+
+    Ok(())
+  }
+
+  #[test]
+  fn should_not_remove_content_inserted_after_the_end_of_removed_range() -> Result {
+    let mut s = MagicString::new("ab.c;");
+
+    s.prepend_right(0, "(")?;
+    s.prepend_right(4, ")")?;
+    s.remove(2, 4)?;
+
+    assert_eq!(s.to_string(), "(ab);");
+
+    Ok(())
+  }
+
+  #[test]
+  fn should_remove_interior_inserts() -> Result {
+    let mut s = MagicString::new("abc;");
+
+    s.append_left(1, "[")?;
+    s.prepend_right(1, "(")?;
+    s.append_left(2, ")")?;
+    s.prepend_right(2, "]")?;
+
+    s.remove(1, 2)?;
+
+    assert_eq!(s.to_string(), "a[]c;");
+
+    Ok(())
+  }
+
+  #[test]
+  #[should_panic]
+  fn should_panic_if_chunk_in_between_is_already_edited() {
+    let mut s = MagicString::new("abcdefghijk");
+
+    assert!(s.append_left(5, "A").is_ok());
+    assert!(s.append_left(6, "B").is_ok());
+    assert!(s.remove(1, 9).is_ok());
+  }
+
+  // #[test]
+  // fn should_remove_across_moved_content() -> Result {
+  //   let mut s = MagicString::new("abcdefghijkl");
   //
-  //   #[test]
-  //   fn should_remove_overlapping_ranges_redux() -> Result {
-  //     let mut s = MagicString::new("abccde");
+  //   // to be implemented
+  //   // s.move(6, 9, 3);
+  //   s.remove(5, 7)?;
   //
-  //     s.remove(2, 3)?; // c
-  //     s.remove(1, 3)?; // bc
-  //     assert_eq!(s.to_string(), "acde");
+  //   assert.equal(s.toString(), "abchidejkl");
   //
-  //     Ok(())
-  //   }
-  //
-  //   #[test]
-  //   fn should_remove_modified_ranges() -> Result {
-  //     let mut s = MagicString::new("abcdefghi");
-  //
-  //     s.overwrite(3, 6, "DEF", OverwriteOptions::default())?;
-  //     s.remove(2, 7)?; // cDEFg
-  //
-  //     assert_eq!(s.slice(1, 8), "bh"); // To be implemented
-  //     assert_eq!(s.to_string(), "abhi");
-  //
-  //     Ok(())
-  //   }
-  //
-  //   #[test]
-  //   fn should_not_remove_content_inserted_after_the_end_of_removed_range() -> Result {
-  //     let mut s = MagicString::new("ab.c;");
-  //
-  //     s.prepend_right(0, "(")?;
-  //     s.prepend_right(4, ")")?;
-  //     s.remove(2, 4)?;
-  //
-  //     assert_eq!(s.to_string(), "(ab);");
-  //
-  //     Ok(())
-  //   }
-  //
-  //   #[test]
-  //   fn should_remove_interior_inserts() -> Result {
-  //     let mut s = MagicString::new("abc;");
-  //
-  //     s.append_left(1, "[")?;
-  //     s.prepend_right(1, "(")?;
-  //     s.append_left(2, ")")?;
-  //     s.prepend_right(2, "]")?;
-  //
-  //     s.remove(1, 2)?;
-  //
-  //     assert_eq!(s.to_string(), "a[]c;");
-  //
-  //     Ok(())
-  //   }
-  //
-  //   #[test]
-  //   #[should_panic]
-  //   fn should_provide_a_useful_error_when_illegal_removals_are_attempted() -> Result {
-  //     todo!()
-  //   }
-  //
-  //   #[test]
-  //   fn should_remove_across_moved_content() -> Result {
-  //     let mut s = MagicString::new("abcdefghijkl");
-  //
-  //     // to be implemented
-  //     // s.move(6, 9, 3);
-  //     s.remove(5, 7)?;
-  //
-  //     assert.equal(s.toString(), "abchidejkl");
-  //
-  //     Ok(())
-  //   }
+  //   Ok(())
+  // }
+
+  #[test]
+  fn should_return_self() -> Result {
+    let mut s = MagicString::new("");
+    let result = s.remove(0, 0)?;
+
+    let result_ptr = result as *mut _;
+    let s_ptr = &s as *const _;
+
+    assert_eq!(s_ptr, result_ptr);
+
+    let mut s = MagicString::new("abcdefg");
+    let result = s.remove(1, 2)?;
+
+    let result_ptr = result as *mut _;
+    let s_ptr = &s as *const _;
+
+    assert_eq!(s_ptr, result_ptr);
+
+    Ok(())
+  }
 }

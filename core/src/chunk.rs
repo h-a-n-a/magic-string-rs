@@ -96,10 +96,6 @@ impl Chunk {
     self.original_str.len() != self.content.len() || self.original_str != self.content
   }
 
-  pub fn is_edited(&self) -> bool {
-    self.is_content_edited() || !self.intro.is_empty() || !self.outro.is_empty()
-  }
-
   pub fn try_each_next<F>(chunk: Rc<RefCell<Chunk>>, mut f: F) -> Result
   where
     F: FnMut(Rc<RefCell<Chunk>>) -> Result<bool>,
@@ -168,7 +164,7 @@ impl Chunk {
       curr_chunk.content = chunk_str.to_owned();
     }
 
-    curr_chunk.original_str = chunk_str.to_owned();
+    curr_chunk.original_str = chunk_str;
     curr_chunk.end = index;
 
     next_chunk.borrow_mut().next = {
