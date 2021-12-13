@@ -57,6 +57,42 @@ impl MagicString {
     Ok(self)
   }
 
+  #[napi]
+  pub fn overwrite(
+    &mut self,
+    start: i64,
+    end: i64,
+    content: String,
+    options: magic_string::OverwriteOptions,
+  ) -> Result<&Self> {
+    self.0.overwrite(start, end, content.as_str(), options)?;
+    Ok(self)
+  }
+
+  #[napi]
+  pub fn trim(&mut self, pattern: Option<String>) -> Result<&Self> {
+    self.0.trim(pattern.as_deref())?;
+    Ok(self)
+  }
+
+  #[napi]
+  pub fn trim_start(&mut self, pattern: Option<String>) -> Result<&Self> {
+    self.0.trim_start(pattern.as_deref())?;
+    Ok(self)
+  }
+
+  #[napi]
+  pub fn trim_end(&mut self, pattern: Option<String>) -> Result<&Self> {
+    self.0.trim_end(pattern.as_deref())?;
+    Ok(self)
+  }
+
+  #[napi]
+  pub fn trim_lines(&mut self) -> Result<&Self> {
+    self.0.trim_lines()?;
+    Ok(self)
+  }
+
   #[napi(ts_return_type = "{ toString: () => string, toUrl: () => string }")]
   pub fn generate_map(
     &mut self,
@@ -88,8 +124,14 @@ impl MagicString {
   }
 
   #[napi]
+  #[allow(clippy::inherent_to_string)]
   pub fn to_string(&self) -> String {
     self.0.to_string()
+  }
+
+  #[napi]
+  pub fn length(&self) -> u32 {
+    self.0.len() as u32
   }
 }
 
@@ -111,4 +153,9 @@ pub struct GenerateDecodedMapOptions {
   pub source_root: Option<String>,
   pub source: Option<String>,
   pub include_content: bool,
+}
+/// Only for .d.ts generation
+#[napi(object)]
+pub struct OverwriteOptions {
+  pub content_only: bool,
 }

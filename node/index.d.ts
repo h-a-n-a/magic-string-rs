@@ -6,12 +6,6 @@ export class ExternalObject<T> {
     [K: symbol]: T
   }
 }
-export interface GenerateDecodedMapOptions {
-  file?: string | undefined | null
-  sourceRoot?: string | undefined | null
-  source?: string | undefined | null
-  includeContent: boolean
-}
 /** Only for .d.ts type generation */
 export interface DecodedMap {
   file?: string | undefined | null
@@ -28,6 +22,10 @@ export interface GenerateDecodedMapOptions {
   source?: string | undefined | null
   includeContent: boolean
 }
+/** Only for .d.ts generation */
+export interface OverwriteOptions {
+  contentOnly: boolean
+}
 export class MagicString {
   constructor(originalStr: string)
   append(input: string): this
@@ -36,6 +34,16 @@ export class MagicString {
   appendRight(index: number, input: string): this
   prependLeft(index: number, input: string): this
   prependRight(index: number, input: string): this
+  overwrite(
+    start: number,
+    end: number,
+    content: string,
+    options: OverwriteOptions,
+  ): this
+  trim(pattern?: string | undefined | null): this
+  trimStart(pattern?: string | undefined | null): this
+  trimEnd(pattern?: string | undefined | null): this
+  trimLines(): this
   generateMap(options?: GenerateDecodedMapOptions | undefined | null): {
     toString: () => string
     toUrl: () => string
@@ -48,4 +56,5 @@ export class MagicString {
     options?: GenerateDecodedMapOptions | undefined | null,
   ): DecodedMap
   toString(): string
+  length(): number
 }

@@ -29,7 +29,7 @@ impl Mapping {
     }
   }
 
-  pub fn add_unedited_chunk(
+  pub fn add_chunk(
     &mut self,
     chunk: Rc<RefCell<Chunk>>,
     (original_line, original_column): (u32, u32),
@@ -135,6 +135,7 @@ impl Mapping {
   }
 
   // generate encoded mappings, mappings are encoded relatively
+  #[allow(clippy::ptr_arg)]
   pub fn generate_encoded_mappings(decoded_mappings: &Mappings) -> Result<String> {
     let mut encoded_mappings: Vec<String> = vec![];
 
@@ -171,18 +172,18 @@ mod tests {
   fn absolute_mapping_to_relative_mapping() {
     let mut mapping = Mapping::new();
 
-    mapping.absolute_mappings.push(vec![vec![3, 0, 0, 0]]);
-    mapping.absolute_mappings.push(vec![vec![0, 0, 1, 0]]);
-    mapping.absolute_mappings.push(vec![vec![0, 0, 2, 0]]);
+    mapping.absolute_mappings.push(vec![vec![3, 1, 0, 1]]);
+    mapping.absolute_mappings.push(vec![vec![4, 4, 1, 5]]);
+    mapping.absolute_mappings.push(vec![vec![0, 5, 2, 9]]);
 
     let decoded_mappings = mapping.get_decoded_mappings();
 
     assert_eq!(
       &decoded_mappings,
       &vec![
-        vec![vec![3, 0, 0, 0]],
-        vec![vec![0, 0, 1, 0]],
-        vec![vec![0, 0, 1, 0]],
+        vec![vec![3, 1, 0, 1]],
+        vec![vec![4, 3, 1, 4]],
+        vec![vec![0, 1, 1, 4]],
       ]
     )
   }

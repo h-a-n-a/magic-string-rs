@@ -1,4 +1,5 @@
 pub mod locator {
+  #[allow(dead_code)]
   #[derive(Debug, Clone)]
   pub struct Locator {
     original_lines: Vec<String>,
@@ -67,5 +68,81 @@ pub mod locator {
       assert_eq!(locator.locate(8), (1, 2));
       assert_eq!(locator.locate(14), (2, 1));
     }
+  }
+}
+
+pub mod trim {
+  use regex::Regex;
+
+  use crate::Result;
+
+  pub fn trim_start_regexp<'a>(s: &'a str, reg_pat: &'a str) -> Result<&'a str> {
+    if s.is_empty() {
+      return Ok(s);
+    }
+
+    let matcher = Regex::new(reg_pat)?;
+    let chars = s.chars().collect::<Vec<_>>();
+
+    let mut pos = 0;
+
+    while pos < s.len() {
+      let c = chars.get(pos).unwrap();
+      if !matcher.is_match(c.to_string().as_str()) {
+        break;
+      }
+      pos += 1;
+    }
+
+    Ok(&s[pos..])
+  }
+
+  pub fn trim_end_regexp<'a>(s: &'a str, reg_pat: &'a str) -> Result<&'a str> {
+    if s.is_empty() {
+      return Ok(s);
+    }
+
+    let matcher = Regex::new(reg_pat)?;
+    let chars = s.chars().collect::<Vec<_>>();
+
+    let mut pos = (s.len() - 1) as i32;
+
+    while pos >= 0 {
+      let c = chars.get(pos as usize).unwrap();
+      if !matcher.is_match(c.to_string().as_str()) {
+        break;
+      }
+      pos -= 1;
+    }
+
+    Ok(&s[..(pos + 1) as usize])
+  }
+
+  #[test]
+  fn should_trim_start() -> Result {
+    assert_eq!(trim_start_regexp("  abc  ", "\\s")?, "abc  ");
+    assert_eq!(trim_start_regexp("\t\t\tabc\t\t", "\\t")?, "abc\t\t");
+    assert_eq!(trim_start_regexp("\n\nabc\t\t", "\n")?, "abc\t\t");
+    assert_eq!(trim_start_regexp("\n\n\n", "\n")?, "");
+
+    Ok(())
+  }
+
+  #[test]
+  fn should_trim_end() -> Result {
+    assert_eq!(trim_end_regexp("  abc  ", "\\s")?, "  abc");
+    assert_eq!(trim_end_regexp("\t\t\tabc\t\t", "\\t")?, "\t\t\tabc");
+    assert_eq!(trim_end_regexp("\t\tabc\n\n", "\n")?, "\t\tabc");
+    assert_eq!(trim_end_regexp("\n\n\n", "\n")?, "");
+
+    Ok(())
+  }
+
+  #[test]
+  fn should_not_trim_unrelated_contents() -> Result {
+    assert_eq!(trim_start_regexp("\\s\\sabc", "\\s")?, "\\s\\sabc");
+    assert_eq!(trim_end_regexp("abc\\t\\t", "\\t")?, "abc\\t\\t");
+
+    Ok(())
   }
 }

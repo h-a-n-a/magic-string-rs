@@ -4,8 +4,8 @@
 
 <p align="center">
 <a href="https://github.com/h-a-n-a/magic-string-rs/actions/workflows/CI.yaml"><img src="https://github.com/h-a-n-a/magic-string-rs/actions/workflows/CI.yaml/badge.svg" alt="CI"></a>
-  <a href="https://crates.io/crates/magic_string"><img src="https://img.shields.io/crates/v/magic_string.svg?label=crates" alt="crates"></a>
-<a href="https://www.npmjs.com/package/@napi-rs/magic-string"><img src="https://img.shields.io/npm/v/@napi-rs/magic-string?color=c95f8b&amp;label=NPM" alt="NPM version"></a></p>
+<a href="https://crates.io/crates/magic_string"><img src="https://img.shields.io/crates/v/magic_string.svg?label=crates" alt="crates"></a>
+<a href="https://www.npmjs.com/package/@napi-rs/magic-string"><img src="https://img.shields.io/npm/v/@napi-rs/magic-string?color=c95f8b&amp;label=NPM" alt="NPM version"></a>
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
 
 <br />
 
-## Installation
+## 🔧 Installation
 
 ### Rust
 
@@ -90,7 +90,12 @@ Finished 2 cases!
 - [x] prependRight
 - [x] appendLeft
 - [x] appendRight
-- [ ] overwrite
+- [x] overwrite
+- [x] trim
+- [x] trimStart
+- [x] trimEnd
+- [x] trimLines
+- [x] isEmpty
 - [ ] move
 - [ ] indent
 - [ ] addSourcemapLocation
@@ -98,11 +103,6 @@ Finished 2 cases!
 - [ ] remove
 - [ ] slice
 - [ ] snip
-- [ ] trim
-- [ ] trimStart
-- [ ] trimEnd
-- [ ] trimLines
-- [ ] isEmpty
 
 
 ## Credits
