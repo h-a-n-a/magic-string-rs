@@ -5,7 +5,7 @@ edition = "2021"
 license = "MIT"
 name = "magic_string"
 repository = "https://github.com/h-a-n-a/magic-string-rs"
-version = "0.3.0"
+version = "0.3.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
