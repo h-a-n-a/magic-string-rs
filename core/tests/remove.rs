@@ -117,16 +117,6 @@ mod remove {
     Ok(())
   }
 
-  #[test]
-  #[should_panic]
-  fn should_panic_if_chunk_in_between_is_already_edited() {
-    let mut s = MagicString::new("abcdefghijk");
-
-    assert!(s.append_left(5, "A").is_ok());
-    assert!(s.append_left(6, "B").is_ok());
-    assert!(s.remove(1, 9).is_ok());
-  }
-
   // #[test]
   // fn should_remove_across_moved_content() -> Result {
   //   let mut s = MagicString::new("abcdefghijkl");

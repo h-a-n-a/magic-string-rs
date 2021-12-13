@@ -76,8 +76,8 @@ mod overwrite {
   fn should_not_replace_zero_length_inserts_at_overwrite_start_location() -> Result {
     let mut s = MagicString::new("abcdefghijkl");
 
-    s.remove(0, 6);
-    s.append_left(6, "DEF");
+    s.remove(0, 6)?;
+    s.append_left(6, "DEF")?;
     s.overwrite(6, 9, "GHI", OverwriteOptions::default())?;
 
     assert_eq!(s.to_string(), "DEFGHIjkl");

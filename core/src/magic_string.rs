@@ -510,42 +510,15 @@ impl MagicString {
     let start_chunk = self.chunk_by_start.get(&start);
     let end_chunk = self.chunk_by_end.get(&end);
 
-    // If `start_chunk` does not equals to `end_chunk`, there's one or more chunks between these editing points.
-    // At which point, we should check whether the chunks in between is edited. If edited, we should return an `Error`
-    if start_chunk != end_chunk {
-      let start_chunk = if start_chunk.is_some() {
-        start_chunk.map(Rc::clone).unwrap()
-      } else {
-        Rc::clone(&self.first_chunk)
-      };
+    if start_chunk.is_some() {
+      Chunk::try_each_next(start_chunk.map(Rc::clone).unwrap(), |chunk| {
+        chunk.borrow_mut().content = String::default();
+        chunk.borrow_mut().intro = String::default();
+        chunk.borrow_mut().outro = String::default();
 
-      Chunk::try_each_next(start_chunk, |chunk| {
-        if !chunk.borrow().outro.is_empty()
-          || !chunk.borrow().intro.is_empty()
-          || (!chunk.borrow().content.is_empty() && chunk.borrow().is_content_edited())
-        {
-          return Err(Error::new(
-            MagicStringErrorType::MagicStringDoubleSplitError,
-          ));
-        }
-
-        Ok(chunk != Rc::clone(end_chunk.unwrap()))
+        Ok(chunk == Rc::clone(end_chunk.unwrap()))
       })?;
     }
-
-    let start_chunk = if start_chunk.is_some() {
-      start_chunk.map(Rc::clone).unwrap()
-    } else {
-      Rc::clone(&self.first_chunk)
-    };
-
-    Chunk::try_each_next(start_chunk, |chunk| {
-      chunk.borrow_mut().content = String::default();
-      chunk.borrow_mut().intro = String::default();
-      chunk.borrow_mut().outro = String::default();
-
-      Ok(chunk == Rc::clone(end_chunk.unwrap()))
-    })?;
 
     Ok(self)
   }
