@@ -591,18 +591,17 @@ impl MagicString {
 
     let search_forward = index > chunk.borrow().start;
 
-    let mut curr = Some(&chunk);
+    let mut curr = Some(chunk);
     while let Some(c) = curr {
       if c.borrow().contains(index) {
-        let cloned_self = Rc::clone(c);
-        self._split_chunk_at_index(cloned_self, index)?;
+        self._split_chunk_at_index(c, index)?;
         return Ok(());
       } else {
         curr = {
           if search_forward {
-            self.chunk_by_start.get(&c.borrow().end)
+            self.chunk_by_start.get(&c.borrow().end).map(Rc::clone)
           } else {
-            self.chunk_by_end.get(&c.borrow().start)
+            self.chunk_by_end.get(&c.borrow().start).map(Rc::clone)
           }
         }
       }
