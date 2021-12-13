@@ -33,6 +33,8 @@ magic_string = "x.x.x"
 $ npm install @napi-rs/magic-string
 ```
 
+Note: Web-Assembly is currently not supported, but it's on the plan.
+
 
 ## Benchmark
 
@@ -96,11 +98,11 @@ Finished 2 cases!
 - [x] trimEnd
 - [x] trimLines
 - [x] isEmpty
+- [x] remove
 - [ ] move
 - [ ] indent
 - [ ] addSourcemapLocation
 - [ ] clone
-- [ ] remove
 - [ ] slice
 - [ ] snip
 
