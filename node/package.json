@@ -1,6 +1,6 @@
 {
   "name": "@napi-rs/magic-string",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "rusty magic-string",
   "main": "index.js",
   "types": "index.d.ts",
