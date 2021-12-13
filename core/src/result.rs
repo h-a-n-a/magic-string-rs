@@ -22,6 +22,7 @@ pub enum MagicStringErrorType {
   MagicStringOutOfRangeError,
   MagicStringCrossChunkError,
   MagicStringDoubleSplitError,
+  MagicStringUnknownError,
 
   Default,
 }
@@ -160,6 +161,10 @@ impl From<Error> for napi::Error {
       MagicStringErrorType::MagicStringDoubleSplitError => {
         reason.push_str("Magic String Double Split Error");
       }
+      MagicStringErrorType::MagicStringUnknownError => {
+        reason.push_str("Magic encountered an unknown error, please file an issue");
+      }
+
       MagicStringErrorType::Default => {
         reason.push_str(
           "Default Error should never been thrown to the user end, please file an issue.",

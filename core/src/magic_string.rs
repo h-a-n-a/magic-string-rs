@@ -1,6 +1,6 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc, string::ToString};
 
-use crate::utils::trim;
+use crate::utils::{normalize_index, trim};
 
 #[cfg(feature = "node-api")]
 use napi_derive::napi;
@@ -235,27 +235,8 @@ impl MagicString {
     options: OverwriteOptions,
   ) -> Result<&mut Self> {
     let content_only = options.content_only;
-    let start = if start < 0 {
-      start + self.original_str.len() as i64
-    } else {
-      start
-    };
-    let end = if end < 0 {
-      end + self.original_str.len() as i64
-    } else {
-      end
-    };
-
-    if start < 0
-      || end < 0
-      || start > self.original_str.len() as i64
-      || end > self.original_str.len() as i64
-    {
-      return Err(Error::new_with_reason(
-        MagicStringErrorType::MagicStringOutOfRangeError,
-        "Start or end out of range",
-      ));
-    }
+    let start = normalize_index(self.original_str.as_str(), start)?;
+    let end = normalize_index(self.original_str.as_str(), end)?;
 
     let start = start as u32;
     let end = end as u32;
@@ -267,6 +248,13 @@ impl MagicString {
       ));
     }
 
+    if start > end {
+      return Err(Error::new_with_reason(
+        MagicStringErrorType::MagicStringOutOfRangeError,
+        "Start must be greater than end.",
+      ));
+    }
+
     self._split_at_index(start)?;
     self._split_at_index(end)?;
 
@@ -274,6 +262,9 @@ impl MagicString {
     let end_chunk: Option<Rc<RefCell<Chunk>>> = self.chunk_by_end.get(&end).map(Rc::clone);
 
     if let Some(start_chunk) = start_chunk {
+      // Note: This original implementation looks a little bit weird to me.
+      // It should check whether the latter chunks had been edited(not only for content-wise, but also for intro and outro) or not,
+      // then we could return the Error. But for now, It's been doing just fine.
       if start_chunk.borrow().end < end
         && (start_chunk.borrow().next
           != self
@@ -477,6 +468,88 @@ impl MagicString {
     self.trim_start(Some("\n"))?.trim_end(Some("\n"))
   }
 
+  /// ## Remove
+  ///
+  /// Removes the characters from start to end (of the original string, not the generated string).
+  /// Removing the same content twice, or making removals that partially overlap, will cause an error. Returns `self`.
+  ///
+  /// Example:
+  /// ```
+  /// use magic_string::MagicString;
+  /// let mut s = MagicString::new("abcdefghijkl");
+  ///
+  /// s.remove(1, 5);
+  /// assert_eq!(s.to_string(), "afghijkl");
+  ///
+  /// s.remove(9, 12);
+  /// assert_eq!(s.to_string(), "afghi");
+  ///
+  /// ```
+  pub fn remove(&mut self, start: i64, end: i64) -> Result<&mut Self> {
+    let start = normalize_index(self.original_str.as_str(), start)?;
+    let end = normalize_index(self.original_str.as_str(), end)?;
+
+    let start = start as u32;
+    let end = end as u32;
+
+    if start == end {
+      // according to the original implementation, this is a noop.
+      return Ok(self);
+    }
+
+    if start > end {
+      return Err(Error::new_with_reason(
+        MagicStringErrorType::MagicStringOutOfRangeError,
+        "Start must be greater than end.",
+      ));
+    }
+
+    self._split_at_index(start)?;
+    self._split_at_index(end)?;
+
+    let start_chunk = self.chunk_by_start.get(&start);
+    let end_chunk = self.chunk_by_end.get(&end);
+
+    if !end_chunk.is_some() {
+      // `end_chunk` should always be exist cause we split before.
+      return Err(Error::new(MagicStringErrorType::MagicStringUnknownError));
+    }
+
+    // If `start_chunk` does not equals to `end_chunk`, there's one or more chunks between these editing points.
+    // At which point, we should check whether the chunks in between is edited. If edited, we should return an `Error`
+    if start_chunk != end_chunk {
+      let start_chunk = if start_chunk.is_some() {
+        start_chunk.map(Rc::clone).unwrap()
+      } else {
+        Rc::clone(&self.first_chunk)
+      };
+
+      Chunk::try_each_next(start_chunk, |chunk| {
+        if chunk.borrow().is_edited() {
+          return Err(Error::new(
+            MagicStringErrorType::MagicStringDoubleSplitError,
+          ));
+        }
+
+        Ok(chunk != Rc::clone(&end_chunk.unwrap()))
+      })?;
+    }
+
+    let start_chunk = if start_chunk.is_some() {
+      start_chunk.map(Rc::clone).unwrap()
+    } else {
+      Rc::clone(&self.first_chunk)
+    };
+
+    Chunk::try_each_next(start_chunk, |chunk| {
+      chunk.borrow_mut().content = String::default();
+
+      Ok(chunk == Rc::clone(&end_chunk.unwrap()))
+    })?;
+
+    Ok(self)
+  }
+
   /// ## Is empty
   ///
   /// Returns `true` if the resulting source is empty (disregarding white space).
@@ -611,7 +684,8 @@ impl MagicString {
   }
 
   fn _split_chunk_at_index(&mut self, chunk: Rc<RefCell<Chunk>>, index: u32) -> Result {
-    if chunk.borrow().is_content_edited() {
+    // Zero-length edited chunks can be split into different chunks, cause split chunks are the same.
+    if chunk.borrow().is_content_edited() && !chunk.borrow().content.is_empty() {
       return Err(Error::new(
         MagicStringErrorType::MagicStringDoubleSplitError,
       ));

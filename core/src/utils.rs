@@ -146,3 +146,20 @@ pub mod trim {
     Ok(())
   }
 }
+
+use crate::{Error, MagicStringErrorType, Result};
+
+pub fn normalize_index(s: &str, index: i64) -> Result<usize> {
+  let len = s.len() as i64;
+
+  let index = if index < 0 { index + len } else { index };
+
+  if index < 0 || index > len {
+    return Err(Error::new_with_reason(
+      MagicStringErrorType::MagicStringOutOfRangeError,
+      "index out of range",
+    ));
+  }
+
+  Ok(index as usize)
+}

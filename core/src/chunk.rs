@@ -96,6 +96,10 @@ impl Chunk {
     self.original_str.len() != self.content.len() || self.original_str != self.content
   }
 
+  pub fn is_edited(&self) -> bool {
+    self.is_content_edited() || !self.intro.is_empty() || !self.outro.is_empty()
+  }
+
   pub fn try_each_next<F>(chunk: Rc<RefCell<Chunk>>, mut f: F) -> Result
   where
     F: FnMut(Rc<RefCell<Chunk>>) -> Result<bool>,
@@ -141,37 +145,41 @@ impl Chunk {
   }
 
   pub fn split(chunk: Rc<RefCell<Chunk>>, index: u32) -> Rc<RefCell<Self>> {
-    let mut borrowed_chunk = chunk.borrow_mut();
-    let chunk_str =
-      borrowed_chunk.original_str[0..(index - borrowed_chunk.start) as usize].to_owned();
-    let next_chunk_str =
-      borrowed_chunk.original_str[(index - borrowed_chunk.start) as usize..].to_owned();
+    let mut curr_chunk = chunk.borrow_mut();
+
+    let chunk_mid = (index - curr_chunk.start) as usize;
+    let chunk_str = curr_chunk.original_str[0..chunk_mid].to_owned();
+    let next_chunk_str = curr_chunk.original_str[chunk_mid..].to_owned();
 
     let next_chunk = Rc::new(RefCell::new(Chunk::new(
       index,
-      borrowed_chunk.end,
+      curr_chunk.end,
       next_chunk_str.as_str(),
     )));
 
-    borrowed_chunk.original_str = chunk_str.to_owned();
-    borrowed_chunk.content = chunk_str;
-    borrowed_chunk.end = index;
+    // `outro` of the current chunk will be moved to the newly created one and we need to reset the current one
+    next_chunk.borrow_mut().outro = curr_chunk.outro.to_owned();
+    curr_chunk.outro = String::default();
 
-    /* Outro of the current chunk will be moved to the newly created one
-     * and we need to reset the current one
-     */
-    borrowed_chunk.outro = String::default();
+    if curr_chunk.is_content_edited() {
+      next_chunk.borrow_mut().content = String::default();
+      curr_chunk.content = String::default();
+    } else {
+      curr_chunk.content = chunk_str.to_owned();
+    }
 
-    next_chunk.borrow_mut().outro = borrowed_chunk.outro.to_owned();
+    curr_chunk.original_str = chunk_str.to_owned();
+    curr_chunk.end = index;
+
     next_chunk.borrow_mut().next = {
-      if borrowed_chunk.next.is_some() {
-        Some(Rc::clone(borrowed_chunk.next.as_ref().unwrap()))
+      if curr_chunk.next.is_some() {
+        Some(Rc::clone(curr_chunk.next.as_ref().unwrap()))
       } else {
         None
       }
     };
 
-    borrowed_chunk.next = Some(Rc::clone(&next_chunk));
+    curr_chunk.next = Some(Rc::clone(&next_chunk));
 
     next_chunk.borrow_mut().prev = Some(Rc::clone(&chunk));
 
