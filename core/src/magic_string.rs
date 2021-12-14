@@ -591,7 +591,7 @@ impl MagicString {
       mappings: map.get_decoded_mappings(),
       source_root: options.source_root.to_owned(),
       sources: vec![options.source],
-      names: vec![],
+      names: Vec::default(),
       sources_content: {
         if options.include_content {
           vec![Some(self.original_str.to_owned())]

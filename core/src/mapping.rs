@@ -34,44 +34,81 @@ impl Mapping {
     chunk: Rc<RefCell<Chunk>>,
     (original_line, original_column): (u32, u32),
   ) {
-    let mut original_line = original_line as i64;
-    let original_column = original_column as i64;
+    let chunk_content_edited = chunk.borrow().is_content_edited();
     self.advance(chunk.borrow().intro.as_str());
 
-    let original_str = chunk.borrow().original_str.to_owned();
-    let original_lines = original_str.split('\n').collect::<Vec<_>>();
+    if chunk_content_edited {
+      let content_str = chunk.borrow().content.to_owned();
+      let content_lines = content_str.split('\n').collect::<Vec<_>>();
 
-    for (index, s) in original_lines.iter().enumerate() {
-      if s.is_empty() {
-        break;
+      // In some edge case where `content` contains a line-break, which can be created through `overwrite`,
+      // we must regard the content as a multi-line string.
+      for (index, &s) in content_lines.iter().enumerate() {
+        if !s.is_empty() {
+          let segment: Vec<i64> = vec![
+            self.generated_code_column.into(),
+            SOURCE_INDEX.into(),
+            original_line.into(),
+            original_column.into(),
+          ];
+
+          if let Some(line) = self
+            .absolute_mappings
+            .get_mut(self.generated_code_line as usize)
+          {
+            line.push(segment)
+          } else {
+            self.absolute_mappings.push(vec![segment])
+          }
+        }
+
+        if index != content_lines.len() - 1 {
+          // We are not at the ending yet, so we have to reset all stuff for new generated lines
+          self.generated_code_line += 1;
+          self.generated_code_column = 0;
+        } else {
+          // We are currently at the last piece, this is the next starting piece.
+          // So we have to set the next starting column for later use.
+          self.generated_code_column += s.len() as u32;
+        }
       }
+    } else {
+      let mut original_line = original_line as i64;
+      let original_column = original_column as i64;
 
-      let segment: Vec<i64> = vec![
-        self.generated_code_column as i64,
-        SOURCE_INDEX as i64,
-        original_line,
-        original_column,
-      ];
+      let original_str = chunk.borrow().original_str.to_owned();
+      let original_lines = original_str.split('\n').collect::<Vec<_>>();
 
-      if let Some(line) = self
-        .absolute_mappings
-        .get_mut(self.generated_code_line as usize)
-      {
-        line.push(segment)
-      } else {
-        self.absolute_mappings.push(vec![segment])
-      }
+      for (index, &s) in original_lines.iter().enumerate() {
+        if !s.is_empty() {
+          let segment: Vec<i64> = vec![
+            self.generated_code_column.into(),
+            SOURCE_INDEX.into(),
+            original_line,
+            original_column,
+          ];
 
-      if index != original_lines.len() - 1 {
-        // We are not at the ending yet, so we have to reset all stuff for new generated lines
+          if let Some(line) = self
+            .absolute_mappings
+            .get_mut(self.generated_code_line as usize)
+          {
+            line.push(segment)
+          } else {
+            self.absolute_mappings.push(vec![segment])
+          }
+        }
 
-        original_line += 1;
-        self.generated_code_line += 1;
-        self.generated_code_column = 0;
-      } else {
-        // We are currently at the last piece, this is the next starting piece.
-        // So we have to set the next starting column for later use.
-        self.generated_code_column += s.len() as u32;
+        if index != original_lines.len() - 1 {
+          // We are not at the ending yet, so we have to reset all stuff for new generated lines
+
+          original_line += 1;
+          self.generated_code_line += 1;
+          self.generated_code_column = 0;
+        } else {
+          // We are currently at the last piece, this is the next starting piece.
+          // So we have to set the next starting column for later use.
+          self.generated_code_column += s.len() as u32;
+        }
       }
     }
 
@@ -85,8 +122,11 @@ impl Mapping {
 
     let lines = str.split('\n').collect::<Vec<_>>();
 
-    if lines.len() > 1 {
+    let mut i = lines.len();
+    while i > 1 {
+      self.absolute_mappings.push(Vec::default());
       self.generated_code_column = 0;
+      i -= 1;
     }
 
     self.generated_code_line += (lines.len() - 1) as u32;
