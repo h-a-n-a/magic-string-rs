@@ -16,6 +16,8 @@
 
 ## 🔧 Installation
 
+The project is under heavy development, some functions might not work as expected.
+
 ### Rust
 
 Add it as a dependency in a Cargo project.
