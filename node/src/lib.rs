@@ -93,7 +93,24 @@ impl MagicString {
     Ok(self)
   }
 
-  #[napi(ts_return_type = "{ toString: () => string, toUrl: () => string }")]
+  #[napi]
+  pub fn remove(&mut self, start: i64, end: i64) -> Result<&Self> {
+    self.0.remove(start, end)?;
+    Ok(self)
+  }
+
+  #[napi(ts_return_type = r"{ 
+    version: number;
+    file: string | null;
+    sources: (string | null)[];
+    sourcesContent: (string | null)[];
+    names: string[];
+    mappings: string;
+    sourceRoot?: string;
+
+    toString: () => string;
+    toUrl: () => string 
+    }")]
   pub fn generate_map(
     &mut self,
     options: Option<magic_string::GenerateDecodedMapOptions>,

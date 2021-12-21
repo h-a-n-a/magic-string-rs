@@ -10,22 +10,33 @@ module.exports.MagicString = class MagicString extends MagicStringNative {
       source: null,
       sourceRoot: null,
       includeContent: false,
-      ...options
+      ...options,
     })
 
-    const toString = () => super.toSourcemapString(sourcemap)
+    const str = super.toSourcemapString(sourcemap)
+    const obj = JSON.parse(str)
+
+    const toString = () => str
     const toUrl = () => super.toSourcemapUrl(sourcemap)
 
-    return {
-      toString,
-      toUrl,
-    }
+    Object.defineProperty(obj, 'toString', {
+      value: toString,
+    })
+    Object.defineProperty(obj, 'toUrl', {
+      value: toUrl,
+    })
+
+    return obj
   }
   toSourcemapString() {
-    throw new Error("[magic-string] This is an internal API, you may refer to `generateMap`")
+    throw new Error(
+      '[magic-string] This is an internal API, you may refer to `generateMap`',
+    )
   }
   toSourcemapUrl() {
-    throw new Error("[magic-string] This is an internal API, you may refer to `generateMap`")
+    throw new Error(
+      '[magic-string] This is an internal API, you may refer to `generateMap`',
+    )
   }
 }
 

@@ -37,7 +37,6 @@
     "build": "napi build --platform --release --js binding.js --pipe \"prettier -w\"",
     "build:debug": "napi build --platform --js binding.js --pipe \"prettier -w\"",
     "prepublishOnly": "napi prepublish -t npm && esbuild --minify --outfile=binding.js --allow-overwrite binding.js",
-    "test": "echo test",
     "lint": "echo lint",
     "version": "napi version"
   },
@@ -61,5 +60,6 @@
   },
   "engines": {
     "node": ">= 10"
-  }
+  },
+  "dependencies": {}
 }
