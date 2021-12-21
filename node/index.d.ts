@@ -44,7 +44,16 @@ export class MagicString {
   trimStart(pattern?: string | undefined | null): this
   trimEnd(pattern?: string | undefined | null): this
   trimLines(): this
+  remove(start: number, end: number): this
   generateMap(options?: GenerateDecodedMapOptions | undefined | null): {
+    version: number
+    file: string
+    sources: string[]
+    sourcesContent: string[]
+    names: string[]
+    mappings: string
+    sourceRoot?: string
+
     toString: () => string
     toUrl: () => string
   }

@@ -23,7 +23,8 @@
   "scripts": {
     "bench": "node -r @swc-node/register benchmark/bench.ts",
     "build": "yarn --cwd node build",
-    "format": "prettier . -w"
+    "format": "prettier . -w",
+    "test": "ava"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.0.0-beta.4",
@@ -51,5 +52,16 @@
     "singleQuote": true,
     "trailingComma": "all",
     "arrowParens": "always"
+  },
+  "ava": {
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "@swc-node/register"
+    ],
+    "files": [
+      "**/*.spec.ts"
+    ]
   }
 }
