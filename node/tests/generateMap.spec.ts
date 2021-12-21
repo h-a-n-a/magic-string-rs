@@ -1,8 +1,7 @@
-import test from "ava"
-
+import assert from "assert"
 import { MagicString } from ".."
 
-test("should generate a sourcemap",  t => {
+describe("should generate a sourcemap",  () => {
   const s = new MagicString("abcdefghijkl")
   s.remove(3,9);
 
@@ -13,18 +12,18 @@ test("should generate a sourcemap",  t => {
     includeContent: true
   })
 
-  t.is(map.version, 3)
-  t.is(map.file, "output.md")
-  t.deepEqual(map.sources, ["input.md"])
-  t.is(map.sourceRoot, "./")
-  t.deepEqual(map.sourcesContent, ["abcdefghijkl"])
-  t.is(map.mappings, "AAAA,GAAS")
+  assert.equal(map.version, 3)
+  assert.equal(map.file, "output.md")
+  assert.deepEqual(map.sources, ["input.md"])
+  assert.equal(map.sourceRoot, "./")
+  assert.deepEqual(map.sourcesContent, ["abcdefghijkl"])
+  assert.equal(map.mappings, "AAAA,GAAS")
 
-  t.is(map.toString(), "{\"version\":3,\"mappings\":\"AAAA,GAAS\",\"names\":[],\"sources\":[\"input.md\"],\"sourcesContent\":[\"abcdefghijkl\"],\"file\":\"output.md\",\"sourceRoot\":\"./\"}")
-  t.is(map.toUrl(), "data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJtYXBwaW5ncyI6IkFBQUEsR0FBUyIsIm5hbWVzIjpbXSwic291cmNlcyI6WyJpbnB1dC5tZCJdLCJzb3VyY2VzQ29udGVudCI6WyJhYmNkZWZnaGlqa2wiXSwiZmlsZSI6Im91dHB1dC5tZCIsInNvdXJjZVJvb3QiOiIuLyJ9")
+  assert.equal(map.toString(), "{\"version\":3,\"mappings\":\"AAAA,GAAS\",\"names\":[],\"sources\":[\"input.md\"],\"sourcesContent\":[\"abcdefghijkl\"],\"file\":\"output.md\",\"sourceRoot\":\"./\"}")
+  assert.equal(map.toUrl(), "data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJtYXBwaW5ncyI6IkFBQUEsR0FBUyIsIm5hbWVzIjpbXSwic291cmNlcyI6WyJpbnB1dC5tZCJdLCJzb3VyY2VzQ29udGVudCI6WyJhYmNkZWZnaGlqa2wiXSwiZmlsZSI6Im91dHB1dC5tZCIsInNvdXJjZVJvb3QiOiIuLyJ9")
 })
 
-test("should generate a correct sourcemap for prepend content when hires equals to false", t => {
+describe("should generate a correct sourcemap for prepend content when hires equals to false", () =>  {
   const s = new MagicString("x\nq")
 
   s.prepend("y\n");
@@ -33,11 +32,11 @@ test("should generate a correct sourcemap for prepend content when hires equals 
     includeContent: true
   })
 
-  t.is(map.mappings, ";AAAA;AACA")
-  t.truthy(map.sourcesContent[0])
+  assert.equal(map.mappings, ";AAAA;AACA")
+  assert.ok(map.sourcesContent[0])
 })
 
-test("should correctly map inserted multi-lines content", t => {
+describe("should correctly map inserted multi-lines content", () =>  {
   let s = new MagicString("function Foo () {}")
 
   s.overwrite(15, 16, "\n", {
@@ -48,7 +47,7 @@ test("should correctly map inserted multi-lines content", t => {
     includeContent: true
   })
 
-  t.is(map.toString(), "{\"version\":3,\"mappings\":\"AAAA;AAAgB\",\"names\":[],\"sources\":[null],\"sourcesContent\":[\"function Foo () {}\"],\"file\":null}")
+  assert.equal(map.toString(), "{\"version\":3,\"mappings\":\"AAAA;AAAgB\",\"names\":[],\"sources\":[null],\"sourcesContent\":[\"function Foo () {}\"],\"file\":null}")
 
   s = new MagicString("function Foo () {}")
 
@@ -63,10 +62,10 @@ test("should correctly map inserted multi-lines content", t => {
     includeContent: true
   })
 
-  t.is(map.toString(), "{\"version\":3,\"mappings\":\"AAAA,eAAe;AAAA;AAAE\",\"names\":[],\"sources\":[null],\"sourcesContent\":[\"function Foo () {}\"],\"file\":null}")
+  assert.equal(map.toString(), "{\"version\":3,\"mappings\":\"AAAA,eAAe;AAAA;AAAE\",\"names\":[],\"sources\":[null],\"sourcesContent\":[\"function Foo () {}\"],\"file\":null}")
 })
 
-test("should correctly map inserted content", t => {
+describe("should correctly map inserted content", () =>  {
   const s = new MagicString("function Foo () {}")
 
   s.overwrite(9, 12, "Bar", {
@@ -77,22 +76,22 @@ test("should correctly map inserted content", t => {
     includeContent: true
   })
 
-  t.is(map.toString(), "{\"version\":3,\"mappings\":\"AAAA,SAAS,GAAG\",\"names\":[],\"sources\":[null],\"sourcesContent\":[\"function Foo () {}\"],\"file\":null}")
+  assert.equal(map.toString(), "{\"version\":3,\"mappings\":\"AAAA,SAAS,GAAG\",\"names\":[],\"sources\":[null],\"sourcesContent\":[\"function Foo () {}\"],\"file\":null}")
 })
 
-test("should correctly map to JSON", t => {
+describe("should correctly map to JSON", () =>  {
   const s = new MagicString("function Foo () {}")
 
   let map = s.generateMap({
     includeContent: true
   })
 
-  t.is(map.sourcesContent[0], "function Foo () {}")
-  t.is(map.file, null)
-  t.is(map.sourceRoot, undefined)
-  t.is(map.names.length, 0)
-  t.is(map.sources[0], null)
-  t.is(map.version, 3)
-  t.is(map.mappings, "AAAA")
+  assert.equal(map.sourcesContent[0], "function Foo () {}")
+  assert.equal(map.file, null)
+  assert.equal(map.sourceRoot, undefined)
+  assert.equal(map.names.length, 0)
+  assert.equal(map.sources[0], null)
+  assert.equal(map.version, 3)
+  assert.equal(map.mappings, "AAAA")
 })
 

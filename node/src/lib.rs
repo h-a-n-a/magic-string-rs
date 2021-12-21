@@ -57,7 +57,12 @@ impl MagicString {
     Ok(self)
   }
 
-  #[napi]
+  #[napi(ts_args_type = r"
+    start: number,
+    end: number,
+    content: string,
+    options?: OverwriteOptions
+  ")]
   pub fn overwrite(
     &mut self,
     start: i64,
@@ -99,18 +104,26 @@ impl MagicString {
     Ok(self)
   }
 
-  #[napi(ts_return_type = r"{ 
+  #[napi]
+  pub fn is_empty(&self) -> Result<bool> {
+    Ok(self.0.is_empty())
+  }
+
+  #[napi(
+    ts_args_type = "options?: Partial<GenerateDecodedMapOptions>",
+    ts_return_type = r"{ 
     version: number;
-    file: string | null;
-    sources: (string | null)[];
-    sourcesContent: (string | null)[];
+    file?: string;
+    sources: string[];
+    sourcesContent: string[];
     names: string[];
     mappings: string;
     sourceRoot?: string;
 
     toString: () => string;
-    toUrl: () => string 
-    }")]
+    toUrl: () => string;
+    }"
+  )]
   pub fn generate_map(
     &mut self,
     options: Option<magic_string::GenerateDecodedMapOptions>,
@@ -119,19 +132,20 @@ impl MagicString {
     Ok(external)
   }
 
-  /// @internal
-  #[napi]
+  #[napi(skip_typescript)]
   pub fn to_sourcemap_string(&mut self, sourcemap: External<SourceMap>) -> Result<String> {
     Ok((*sourcemap.as_ref()).to_string()?)
   }
 
-  /// @internal
-  #[napi]
+  #[napi(skip_typescript)]
   pub fn to_sourcemap_url(&mut self, sourcemap: External<SourceMap>) -> Result<String> {
     Ok((*sourcemap.as_ref()).to_url()?)
   }
 
-  #[napi(ts_return_type = "DecodedMap")]
+  #[napi(
+    ts_args_type = "options?: Partial<GenerateDecodedMapOptions>",
+    ts_return_type = "DecodedMap"
+  )]
   pub fn generate_decoded_map(
     &mut self,
     options: Option<magic_string::GenerateDecodedMapOptions>,
@@ -170,6 +184,7 @@ pub struct GenerateDecodedMapOptions {
   pub source_root: Option<String>,
   pub source: Option<String>,
   pub include_content: bool,
+  pub hires: bool,
 }
 /// Only for .d.ts generation
 #[napi(object)]

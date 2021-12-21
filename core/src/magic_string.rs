@@ -22,6 +22,7 @@ pub struct GenerateDecodedMapOptions {
   pub source_root: Option<String>,
   pub source: Option<String>,
   pub include_content: bool,
+  pub hires: bool,
 }
 
 #[cfg(not(feature = "node-api"))]
@@ -31,6 +32,7 @@ pub struct GenerateDecodedMapOptions {
   pub source_root: Option<String>,
   pub source: Option<String>,
   pub include_content: bool,
+  pub hires: bool,
 }
 
 #[cfg(feature = "node-api")]
@@ -569,11 +571,12 @@ impl MagicString {
   ///   file: Some("index.js".to_owned()),
   ///   source: Some("index.ts".to_owned()),
   ///   source_root: Some("./".to_owned()),
-  ///   include_content: true
+  ///   include_content: true,
+  ///   hires: false,
   /// });
   /// ```
   pub fn generate_decoded_map(&mut self, options: GenerateDecodedMapOptions) -> Result<DecodedMap> {
-    let mut map = Mapping::new();
+    let mut map = Mapping::new(options.hires);
     let locator = &self.original_str_locator;
 
     map.advance(self.intro.as_str());
@@ -596,7 +599,7 @@ impl MagicString {
         if options.include_content {
           vec![Some(self.original_str.to_owned())]
         } else {
-          vec![None]
+          Default::default()
         }
       },
     })
@@ -616,7 +619,8 @@ impl MagicString {
   ///   file: Some("index.js".to_owned()),
   ///   source: Some("index.ts".to_owned()),
   ///   source_root: Some("./".to_owned()),
-  ///   include_content: true
+  ///   include_content: true,
+  ///   hires: true,
   /// }).expect("fail to generate map");
   ///
   /// generated_map.to_string(); // generates v3 sourcemap in JSON format

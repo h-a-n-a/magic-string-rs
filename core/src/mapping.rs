@@ -13,15 +13,17 @@ pub type Mappings = Vec<Line>;
 pub struct Mapping {
   generated_code_line: u32,
   generated_code_column: u32,
+  hires: bool,
 
   absolute_mappings: Mappings,
 }
 
 impl Mapping {
-  pub fn new() -> Self {
+  pub fn new(hires: bool) -> Self {
     Self {
       generated_code_line: 0,
       generated_code_column: 0,
+      hires,
 
       // all lines and columns are absolutely related
       // , which is a middle-island for us to convert it to relative mapping later (sourcemap specification)
@@ -74,27 +76,45 @@ impl Mapping {
       }
     } else {
       let mut original_line = original_line as i64;
-      let original_column = original_column as i64;
+      let mut original_column = original_column as i64;
 
       let original_str = chunk.borrow().original_str.to_owned();
       let original_lines = original_str.split('\n').collect::<Vec<_>>();
 
       for (index, &s) in original_lines.iter().enumerate() {
         if !s.is_empty() {
-          let segment: Vec<i64> = vec![
-            self.generated_code_column.into(),
-            SOURCE_INDEX.into(),
-            original_line,
-            original_column,
-          ];
+          let segments = if self.hires {
+            s.chars()
+              .map(|_| {
+                let seg = vec![
+                  self.generated_code_column.into(),
+                  SOURCE_INDEX.into(),
+                  original_line,
+                  original_column,
+                ];
+
+                self.generated_code_column += 1;
+                original_column += 1;
+
+                seg
+              })
+              .collect::<Vec<Vec<i64>>>()
+          } else {
+            vec![vec![
+              self.generated_code_column.into(),
+              SOURCE_INDEX.into(),
+              original_line,
+              original_column,
+            ]]
+          };
 
           if let Some(line) = self
             .absolute_mappings
             .get_mut(self.generated_code_line as usize)
           {
-            line.push(segment)
+            line.extend(segments)
           } else {
-            self.absolute_mappings.push(vec![segment])
+            self.absolute_mappings.push(segments)
           }
         }
 
@@ -102,11 +122,15 @@ impl Mapping {
           // We are not at the ending yet, so we have to reset all stuff for new generated lines
 
           original_line += 1;
+          original_column = 0;
           self.generated_code_line += 1;
           self.generated_code_column = 0;
         } else {
           // We are currently at the last piece, this is the next starting piece.
           // So we have to set the next starting column for later use.
+          if self.hires {
+            continue;
+          }
           self.generated_code_column += s.len() as u32;
         }
       }
@@ -210,20 +234,22 @@ mod tests {
 
   #[test]
   fn absolute_mapping_to_relative_mapping() {
-    let mut mapping = Mapping::new();
+    let mut mapping = Mapping::new(false);
 
-    mapping.absolute_mappings.push(vec![vec![3, 1, 0, 1]]);
-    mapping.absolute_mappings.push(vec![vec![4, 4, 1, 5]]);
-    mapping.absolute_mappings.push(vec![vec![0, 5, 2, 9]]);
+    mapping
+      .absolute_mappings
+      .push(vec![vec![3, 1, 0, 1], vec![4, 1, 0, 1]]);
+    mapping
+      .absolute_mappings
+      .push(vec![vec![5, 5, 2, 9], vec![6, 6, 3, 10]]);
 
     let decoded_mappings = mapping.get_decoded_mappings();
 
     assert_eq!(
       &decoded_mappings,
       &vec![
-        vec![vec![3, 1, 0, 1]],
-        vec![vec![4, 3, 1, 4]],
-        vec![vec![0, 1, 1, 4]],
+        vec![vec![3, 1, 0, 1], vec![1, 0, 0, 0]],
+        vec![vec![5, 4, 2, 8], vec![1, 1, 1, 1]],
       ]
     )
   }

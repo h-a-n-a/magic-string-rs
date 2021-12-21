@@ -12,6 +12,7 @@ mod sourcemap {
       source_root: Some("./".to_owned()),
       source: Some("input.md".to_owned()),
       include_content: true,
+      hires: false,
     })?;
 
     assert_eq!(map.version, 3);
@@ -24,13 +25,23 @@ mod sourcemap {
     assert_eq!(map.to_string().unwrap(), "{\"version\":3,\"mappings\":\"AAAA,GAAS\",\"names\":[],\"sources\":[\"input.md\"],\"sourcesContent\":[\"abcdefghijkl\"],\"file\":\"output.md\",\"sourceRoot\":\"./\"}".to_owned());
     assert_eq!(map.to_url().unwrap(), "data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJtYXBwaW5ncyI6IkFBQUEsR0FBUyIsIm5hbWVzIjpbXSwic291cmNlcyI6WyJpbnB1dC5tZCJdLCJzb3VyY2VzQ29udGVudCI6WyJhYmNkZWZnaGlqa2wiXSwiZmlsZSI6Im91dHB1dC5tZCIsInNvdXJjZVJvb3QiOiIuLyJ9".to_owned());
 
+    let map = s.generate_map(GenerateDecodedMapOptions {
+      file: Some("output.md".to_owned()),
+      source_root: Some("./".to_owned()),
+      source: Some("input.md".to_owned()),
+      include_content: true,
+      hires: true,
+    })?;
+
+    println!("{}{}", map.to_string()?, s.to_string());
+    assert_eq!(map.mappings, "AAAA,CAAC,CAAC,CAAO,CAAC,CAAC".to_owned());
+
     Ok(())
   }
 
   #[test]
   fn should_generate_a_correct_sourcemap_for_prepend_content_when_hires_equals_to_false() -> Result
   {
-    // note that `hires` is not currently supported for `magic-string-rs`
     let mut s = MagicString::new("x\nq");
 
     s.prepend("y\n")?;
@@ -44,6 +55,25 @@ mod sourcemap {
 
     Ok(())
   }
+
+  // TODO: support '\n' mappings
+  // #[test]
+  // fn should_generate_a_correct_sourcemap_for_prepend_content_when_hires_equals_to_true() -> Result {
+  //   let mut s = MagicString::new("x\nq");
+  //
+  //   s.prepend("y\n")?;
+  //
+  //   let map = s.generate_map(GenerateDecodedMapOptions {
+  //     include_content: true,
+  //     hires: true,
+  //     ..GenerateDecodedMapOptions::default()
+  //   })?;
+  //
+  //   println!("{}", s.to_string());
+  //   assert_eq!(map.mappings, ";AAAA,CAAC;AACD");
+  //
+  //   Ok(())
+  // }
 
   #[test]
   fn should_correctly_map_inserted_content() -> Result {

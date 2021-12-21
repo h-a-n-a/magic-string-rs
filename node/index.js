@@ -4,12 +4,19 @@ module.exports.MagicString = class MagicString extends MagicStringNative {
   generateDecodedMap(options) {
     return JSON.parse(super.generateDecodedMap(options))
   }
+  overwrite(start, end, content, options) {
+    options = options || {
+      contentOnly: false,
+    }
+    return super.overwrite(start, end, content, options)
+  }
   generateMap(options) {
     const sourcemap = super.generateMap({
       file: null,
       source: null,
       sourceRoot: null,
       includeContent: false,
+      hires: false,
       ...options,
     })
 
@@ -28,6 +35,18 @@ module.exports.MagicString = class MagicString extends MagicStringNative {
 
     return obj
   }
+  generateDecodedMap(options) {
+    options = options || {
+      file: null,
+      source: null,
+      sourceRoot: null,
+      includeContent: false,
+      hires: false,
+      ...options,
+    }
+
+    return super.generateDecodedMap(options)
+  }
   toSourcemapString() {
     throw new Error(
       '[magic-string] This is an internal API, you may refer to `generateMap`',
@@ -40,4 +59,7 @@ module.exports.MagicString = class MagicString extends MagicStringNative {
   }
 }
 
+Object.assign(exports, '__esModule', {
+  value: true,
+})
 module.exports.default = module.exports.MagicString
