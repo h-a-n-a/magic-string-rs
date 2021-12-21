@@ -1,32 +1,44 @@
 const { MagicString: MagicStringNative } = require('./binding')
 
 module.exports.MagicString = class MagicString extends MagicStringNative {
-  generateDecodedMap(options) {
-    return JSON.parse(super.generateDecodedMap(options))
+  overwrite(start, end, content, options) {
+    options = {
+      contentOnly: false,
+      ...options
+    }
+    return super.overwrite(start, end, content, options)
   }
   generateMap(options) {
-    const sourcemap = super.generateMap({
+    options = {
       file: null,
       source: null,
       sourceRoot: null,
       includeContent: false,
+      hires: false,
       ...options,
-    })
+    }
 
-    const str = super.toSourcemapString(sourcemap)
-    const obj = JSON.parse(str)
+    const toString = () => super.toSourcemapString(options)
+    const toUrl = () => super.toSourcemapUrl(options)
+    const toMap = () => JSON.parse(toString(options))
 
-    const toString = () => str
-    const toUrl = () => super.toSourcemapUrl(sourcemap)
+    return {
+      toString,
+      toUrl,
+      toMap,
+    }
+  }
+  generateDecodedMap(options) {
+    options = {
+      file: null,
+      source: null,
+      sourceRoot: null,
+      includeContent: false,
+      hires: false,
+      ...options,
+    }
 
-    Object.defineProperty(obj, 'toString', {
-      value: toString,
-    })
-    Object.defineProperty(obj, 'toUrl', {
-      value: toUrl,
-    })
-
-    return obj
+    return JSON.parse(super.generateDecodedMap(options))
   }
   toSourcemapString() {
     throw new Error(
@@ -40,4 +52,7 @@ module.exports.MagicString = class MagicString extends MagicStringNative {
   }
 }
 
+Object.assign(exports, '__esModule', {
+  value: true,
+})
 module.exports.default = module.exports.MagicString
