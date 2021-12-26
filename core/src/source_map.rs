@@ -24,20 +24,23 @@ pub struct SourceMap {
 impl SourceMap {
   pub fn new(
     mappings: &str,
-    file: Option<String>,
-    names: Vec<String>,
-    sources_content: Vec<Option<String>>,
-    source_root: Option<String>,
-    sources: Vec<Option<String>>,
+    file: Option<&str>,
+    names: Vec<&str>,
+    sources_content: Vec<Option<&str>>,
+    source_root: Option<&str>,
+    sources: Vec<Option<&str>>,
   ) -> Self {
     Self {
       version: VERSION,
       mappings: String::from(mappings),
-      file,
-      names,
-      sources_content,
-      source_root,
-      sources,
+      file: file.map(|f| f.to_owned()),
+      names: names.iter().map(|&n| n.to_owned()).collect::<Vec<String>>(),
+      sources_content: sources_content
+        .iter()
+        .map(|s| s.map(|s| s.to_owned()))
+        .collect(),
+      source_root: source_root.map(|s| s.to_owned()),
+      sources: sources.iter().map(|s| s.map(|s| s.to_owned())).collect(),
     }
   }
 
