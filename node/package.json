@@ -37,6 +37,7 @@
     "build": "napi build --platform --release --js binding.js --pipe \"prettier -w\"",
     "build:debug": "napi build --platform --js binding.js --pipe \"prettier -w\"",
     "prepublishOnly": "napi prepublish -t npm && esbuild --minify --outfile=binding.js --allow-overwrite binding.js",
+    "prof": "node --cpu-prof prof/index.js",
     "lint": "echo lint",
     "version": "napi version"
   },

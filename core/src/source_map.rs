@@ -7,7 +7,7 @@ use crate::result::Result;
 // current specification version
 static VERSION: u8 = 3;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SourceMap {
   pub version: u8,
@@ -56,7 +56,8 @@ impl SourceMap {
   /// file: Some("index.js".to_owned()),
   ///   source: Some("index.ts".to_owned()),
   ///   source_root: Some("./".to_owned()),
-  ///   include_content: true
+  ///   include_content: true,
+  ///   hires: false,
   /// }).expect("failed to generate decoded map");
   ///
   /// SourceMap::new_from_decoded(decoded_map);

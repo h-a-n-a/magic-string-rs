@@ -10,6 +10,54 @@ const BANNER = `/*!
 */
 `
 
+const EXPORT_STATEMENT = `export default foo`
+
+b.suite(
+    'overwrite',
+    b.add('MagicString', () => {
+        const m = new MagicString(`export const foo = 'bar'`)
+        m.overwrite(13, 16, "bar")
+    }),
+    b.add('MagicStringRust', () => {
+        const m = new MagicStringRust(`export const foo = 'bar'`)
+        m.overwrite(13, 16, "bar")
+    }),
+    b.cycle(),
+    b.complete(),
+)
+
+b.suite(
+    'prepend|append',
+    b.add('MagicString', () => {
+        const m = new MagicString(`export const foo = 'bar'`)
+        m.prepend(BANNER)
+        m.append(EXPORT_STATEMENT)
+    }),
+    b.add('MagicStringRust', () => {
+        const m = new MagicStringRust(`export const foo = 'bar'`)
+        m.prepend(BANNER)
+        m.append(EXPORT_STATEMENT)
+    }),
+    b.cycle(),
+    b.complete(),
+)
+
+b.suite(
+    'add banner#toString',
+    b.add('MagicString', () => {
+        const m = new MagicString(`export const foo = 'bar'`)
+        m.prepend(BANNER)
+        m.toString()
+    }),
+    b.add('MagicStringRust', () => {
+        const m = new MagicStringRust(`export const foo = 'bar'`)
+        m.prepend(BANNER)
+        m.toString()
+    }),
+    b.cycle(),
+    b.complete(),
+    )
+
 b.suite(
   'add banner#generateDecodedMap',
   b.add('MagicString', () => {
@@ -27,6 +75,42 @@ b.suite(
 )
 
 b.suite(
+    'add banner#generateMapHires',
+    b.add('MagicString', () => {
+        const m = new MagicString(`export const foo = 'bar'`)
+        m.prepend(BANNER)
+        m.generateMap({
+            hires: true
+        })
+    }),
+    b.add('MagicStringRust', () => {
+        const m = new MagicStringRust(`export const foo = 'bar'`)
+        m.prepend(BANNER)
+        m.generateMap({
+            hires: true
+        }).toMap()
+    }),
+    b.cycle(),
+    b.complete(),
+)
+
+b.suite(
+    'add banner#generateMap',
+    b.add('MagicString', () => {
+        const m = new MagicString(`export const foo = 'bar'`)
+        m.prepend(BANNER)
+        m.generateMap()
+    }),
+    b.add('MagicStringRust', () => {
+        const m = new MagicStringRust(`export const foo = 'bar'`)
+        m.prepend(BANNER)
+        m.generateMap().toMap()
+    }),
+    b.cycle(),
+    b.complete(),
+)
+
+b.suite(
     'add banner#generateMap.toString',
     b.add('MagicString', () => {
         const m = new MagicString(`export const foo = 'bar'`)
@@ -36,14 +120,34 @@ b.suite(
     b.add('MagicStringRust', () => {
         const m = new MagicStringRust(`export const foo = 'bar'`)
         m.prepend(BANNER)
-        m.generateDecodedMap().toString()
+        m.generateMap().toString()
     }),
     b.cycle(),
     b.complete(),
 )
 
 b.suite(
-    'add banner#generateMap.toString',
+    'add banner#generateMapHires.toString',
+    b.add('MagicString', () => {
+        const m = new MagicString(`export const foo = 'bar'`)
+        m.prepend(BANNER)
+        m.generateMap({
+            hires: true
+        }).toString()
+    }),
+    b.add('MagicStringRust', () => {
+        const m = new MagicStringRust(`export const foo = 'bar'`)
+        m.prepend(BANNER)
+        m.generateMap({
+            hires: true
+        }).toString()
+    }),
+    b.cycle(),
+    b.complete(),
+)
+
+b.suite(
+    'add banner#generateMap.toUrl',
     b.add('MagicString', () => {
         const m = new MagicString(`export const foo = 'bar'`)
         m.prepend(BANNER)

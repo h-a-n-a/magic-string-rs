@@ -9,14 +9,12 @@
 </p>
 
 <p align="center">
-100% API compatible (port) <a href="https://github.com/Rich-Harris/magic-string">MagicString by Rich-Harris</a> implementation for Node and modern browsers, also, for rust, of course.
+<a href="https://github.com/Rich-Harris/magic-string">MagicString</a> port for Node and modern browsers, also, for rust, of course.
 </p>
 
 <br />
 
 ## 🔧 Installation
-
-The project is under heavy development, some functions might not work as expected.
 
 ### Rust
 
@@ -81,11 +79,14 @@ Finished 2 cases!
   Slowest: MagicString
 ```
 
+## 📃 Documentation
+
+[doc.rs](https://docs.rs/magic_string/latest/magic_string)
 
 
 ## Supported APIs
 
-- [x] generateMap
+- [x] generateMap: Note that there is a huge overhead for rust for implementing the same API in Node, for more detail please refer to [this](./node/index.d.ts)
 - [x] generateDecodedMap
 - [x] toString
 - [x] prepend
