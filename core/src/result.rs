@@ -4,7 +4,7 @@ use std::{
   string::{self, FromUtf8Error},
 };
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MagicStringErrorType {
   IOError,
   UTF8Error,
@@ -30,7 +30,7 @@ pub enum MagicStringErrorType {
 
 pub type Result<T = ()> = result::Result<T, Error>;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Error {
   pub error_type: MagicStringErrorType,
   pub reason: Option<String>,
