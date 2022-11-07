@@ -35,44 +35,134 @@ $ npm install @napi-rs/magic-string
 
 Note: Web-Assembly is currently not supported, but it's on the plan.
 
+## Performance
 
-## Benchmark
+### Hardware info
 
 ```
-Running "toString" suite...
+Model Name:	MacBook Pro
+Model Identifier:	MacBookPro17,1
+Chip:	Apple M1
+Total Number of Cores:	8 (4 performance and 4 efficiency)
+Memory:	16 GB
+```
+
+### Benchmark
+
+```
+Running "overwrite" suite...
 Progress: 100%
 
   MagicString:
-    226 614 ops/s, ±0.08%   | slowest, 42.65% slower
+    238 584 ops/s, ±0.34%   | slowest, 50.7% slower
 
   MagicStringRust:
-    395 166 ops/s, ±1.83%   | fastest
+    483 950 ops/s, ±2.13%   | fastest
 
 Finished 2 cases!
   Fastest: MagicStringRust
   Slowest: MagicString
-  
-Running "generateDecodedMap" suite...
+
+Running "prepend|append" suite...
 Progress: 100%
 
   MagicString:
-    173 590 ops/s, ±0.55%   | slowest, 18.84% slower
+    290 244 ops/s, ±1.35%   | slowest, 48.35% slower
 
   MagicStringRust:
-    213 893 ops/s, ±0.75%   | fastest
+    561 981 ops/s, ±6.71%   | fastest
 
 Finished 2 cases!
   Fastest: MagicStringRust
   Slowest: MagicString
-  
-Running "generateMap.toString" suite...
+
+Running "add banner#toString" suite...
 Progress: 100%
 
   MagicString:
-    141 658 ops/s, ±0.53%   | slowest, 31.48% slower
+    301 467 ops/s, ±0.29%   | slowest, 37.66% slower
 
   MagicStringRust:
-    206 744 ops/s, ±0.64%   | fastest
+    483 586 ops/s, ±5.50%   | fastest
+
+Finished 2 cases!
+  Fastest: MagicStringRust
+  Slowest: MagicString
+
+Running "add banner#generateDecodedMap" suite...
+Progress: 100%
+
+  MagicString:
+    233 702 ops/s, ±0.76%   | fastest
+
+  MagicStringRust:
+    229 899 ops/s, ±2.68%   | slowest, 1.63% slower
+
+Finished 2 cases!
+  Fastest: MagicString
+  Slowest: MagicStringRust
+
+Running "add banner#generateMapHires" suite...
+Progress: 100%
+
+  MagicString:
+    177 783 ops/s, ±1.84%   | fastest
+
+  MagicStringRust:
+    90 780 ops/s, ±1.00%    | slowest, 48.94% slower
+
+Finished 2 cases!
+  Fastest: MagicString
+  Slowest: MagicStringRust
+
+Running "add banner#generateMap" suite...
+Progress: 100%
+
+  MagicString:
+    227 594 ops/s, ±0.68%   | slowest, 0.42% slow
+er
+
+  MagicStringRust:
+    228 545 ops/s, ±0.82%   | fastest
+
+Finished 2 cases!
+  Fastest: MagicStringRust
+  Slowest: MagicString
+
+Running "add banner#generateMap.toString" suite...
+Progress: 100%
+
+  MagicString:
+    201 272 ops/s, ±0.47%   | slowest, 21.86% slower
+
+  MagicStringRust:
+    257 577 ops/s, ±2.38%   | fastest
+
+Finished 2 cases!
+  Fastest: MagicStringRust
+  Slowest: MagicString
+
+Running "add banner#generateMapHires.toString" suite...
+Progress: 100%
+
+  MagicString:
+    157 685 ops/s, ±0.18%   | fastest
+
+  MagicStringRust:
+    95 510 ops/s, ±1.00%    | slowest, 39.43% slower
+
+Finished 2 cases!
+  Fastest: MagicString
+  Slowest: MagicStringRust
+
+Running "add banner#generateMap.toUrl" suite...
+Progress: 100%
+
+  MagicString:
+    182 161 ops/s, ±0.65%   | slowest, 25.04% slower
+
+  MagicStringRust:
+    243 019 ops/s, ±0.98%   | fastest
 
 Finished 2 cases!
   Fastest: MagicStringRust
@@ -82,7 +172,6 @@ Finished 2 cases!
 ## 📃 Documentation
 
 [doc.rs](https://docs.rs/magic_string/latest/magic_string)
-
 
 ## Supported APIs
 
@@ -108,7 +197,6 @@ Finished 2 cases!
 - [ ] clone
 - [ ] slice
 - [ ] snip
-
 
 ## Credits
 
