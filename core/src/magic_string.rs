@@ -640,7 +640,7 @@ impl MagicString {
     let end = end as u32;
     let index = index as u32;
 
-    if start >= index && index <= end {
+    if index >= start && index <= end {
       return Err(Error::new_with_reason(
         MagicStringErrorType::MagicStringUnknownError,
         "Index should be within the range of start and end.",
@@ -665,7 +665,24 @@ impl MagicString {
     let old_right = last.borrow().clone().next;
 
     let new_right = self.chunk_by_start.get(&index).map(Rc::clone);
-    let new_left = self.chunk_by_end.get(&index).map(Rc::clone);
+    let new_left = match new_right.clone() {
+      Some(l) => Rc::clone(&l).borrow().clone().prev,
+      None => Some(Rc::clone(&self.last_chunk)),
+    };
+    let clone_old_left = old_left.clone();
+
+    match old_left {
+      Some(old_left) => {
+        old_left.borrow_mut().next = old_right.clone();
+      }
+      None => self.first_chunk = old_right.clone().unwrap(),
+    }
+
+    match old_right {
+      Some(old_right) => old_right.borrow_mut().prev = clone_old_left,
+      None => self.last_chunk = clone_old_left.unwrap(),
+    }
+
     match new_left {
       Some(new_left) => {
         new_left.borrow_mut().next = Some(Rc::clone(&first));
@@ -674,7 +691,7 @@ impl MagicString {
       None => {
         let first = Rc::clone(&first);
         self.first_chunk.borrow_mut().prev = Some(Rc::clone(&first));
-        first.borrow_mut().next = Some(Rc::clone(&self.first_chunk));
+        last.borrow_mut().next = Some(Rc::clone(&self.first_chunk));
         self.first_chunk = first;
       }
     }
@@ -687,22 +704,11 @@ impl MagicString {
       None => {
         let last = Rc::clone(&last);
         self.last_chunk.borrow_mut().next = Some(Rc::clone(&last));
-        last.borrow_mut().prev = Some(Rc::clone(&self.last_chunk));
+        first.borrow_mut().prev = Some(Rc::clone(&self.last_chunk));
+        last.borrow_mut().next = None;
         self.last_chunk = last;
       }
     }
-    let clone_old_left = old_left.clone();
-    match old_left {
-      Some(old_left) => old_left.borrow_mut().next = old_right.clone(),
-      None => self.first_chunk = old_right.clone().unwrap(),
-    }
-
-    match old_right {
-      Some(old_right) => old_right.borrow_mut().prev = clone_old_left,
-      None => self.last_chunk = clone_old_left.unwrap(),
-    }
-
-    // old_left.unwrap().borrow().next = old_right;
 
     Ok(self)
   }
@@ -743,7 +749,12 @@ impl MagicString {
         MagicStringErrorType::MagicStringDoubleSplitError,
       ));
     }
+    let next_chunk = chunk.borrow().clone().next;
     let new_chunk = Chunk::split(Rc::clone(&chunk), index);
+
+    if let Some(next_chunk) = next_chunk {
+      next_chunk.borrow_mut().prev = Some(Rc::clone(&new_chunk));
+    }
 
     let new_chunk_original = new_chunk.borrow();
     self.chunk_by_end.insert(index, Rc::clone(&chunk));
