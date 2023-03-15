@@ -631,6 +631,82 @@ impl MagicString {
     SourceMap::new_from_decoded(decoded_map)
   }
 
+  pub fn move_to(&mut self, start: i64, end: i64, index: i64) -> Result<&mut Self> {
+    let start = normalize_index(self.original_str.as_str(), start)?;
+    let end = normalize_index(self.original_str.as_str(), end)?;
+    let index = normalize_index(self.original_str.as_str(), index)?;
+
+    let start = start as u32;
+    let end = end as u32;
+    let index = index as u32;
+
+    if start >= index && index <= end {
+      return Err(Error::new_with_reason(
+        MagicStringErrorType::MagicStringUnknownError,
+        "Index should be within the range of start and end.",
+      ));
+    }
+
+    if start > end {
+      return Err(Error::new_with_reason(
+        MagicStringErrorType::MagicStringOutOfRangeError,
+        "Start must be greater than end.",
+      ));
+    }
+
+    self._split_at_index(start)?;
+    self._split_at_index(end)?;
+    self._split_at_index(index)?;
+
+    let first = self.chunk_by_start.get(&start).map(Rc::clone).unwrap();
+    let last = self.chunk_by_end.get(&end).map(Rc::clone).unwrap();
+
+    let old_left = first.borrow().clone().prev;
+    let old_right = last.borrow().clone().next;
+
+    let new_right = self.chunk_by_start.get(&index).map(Rc::clone);
+    let new_left = self.chunk_by_end.get(&index).map(Rc::clone);
+    match new_left {
+      Some(new_left) => {
+        new_left.borrow_mut().next = Some(Rc::clone(&first));
+        first.borrow_mut().prev = Some(new_left);
+      }
+      None => {
+        let first = Rc::clone(&first);
+        self.first_chunk.borrow_mut().prev = Some(Rc::clone(&first));
+        first.borrow_mut().next = Some(Rc::clone(&self.first_chunk));
+        self.first_chunk = first;
+      }
+    }
+
+    match new_right {
+      Some(new_right) => {
+        new_right.borrow_mut().prev = Some(Rc::clone(&last));
+        last.borrow_mut().next = Some(new_right);
+      }
+      None => {
+        let last = Rc::clone(&last);
+        self.last_chunk.borrow_mut().next = Some(Rc::clone(&last));
+        last.borrow_mut().prev = Some(Rc::clone(&self.last_chunk));
+        self.last_chunk = last;
+      }
+    }
+    let clone_old_left = old_left.clone();
+    match old_left {
+      Some(old_left) => old_left.borrow_mut().next = old_right.clone(),
+      None => self.first_chunk = old_right.clone().unwrap(),
+    }
+
+    match old_right {
+      Some(old_right) => old_right.borrow_mut().prev = clone_old_left,
+      None => self.last_chunk = clone_old_left.unwrap(),
+    }
+
+    // old_left.unwrap().borrow().next = old_right;
+
+    Ok(self)
+  }
+
   fn _split_at_index(&mut self, index: u32) -> Result {
     if self.chunk_by_end.contains_key(&index) || self.chunk_by_start.contains_key(&index) {
       // early bail-out if it's already split
