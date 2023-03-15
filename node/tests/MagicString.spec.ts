@@ -693,147 +693,147 @@ describe("GenerateMap", () => {
   })
 })
 
-// describe('move', () => {
-//   it('moves content from the start', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     s.move(0, 3, 6)
+describe('move', () => {
+  it('moves content from the start', () => {
+    const s = new MagicString('abcdefghijkl')
+    s.move(0, 3, 6)
 
-//     assert.equal(s.toString(), 'defabcghijkl')
-//   })
+    assert.equal(s.toString(), 'defabcghijkl')
+  })
 
-//   it('moves content to the start', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     s.move(3, 6, 0)
+  it('moves content to the start', () => {
+    const s = new MagicString('abcdefghijkl')
+    s.move(3, 6, 0)
 
-//     assert.equal(s.toString(), 'defabcghijkl')
-//   })
+    assert.equal(s.toString(), 'defabcghijkl')
+  })
 
-//   it('moves content from the end', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     s.move(9, 12, 6)
+  it('moves content from the end', () => {
+    const s = new MagicString('abcdefghijkl')
+    s.move(9, 12, 6)
 
-//     assert.equal(s.toString(), 'abcdefjklghi')
-//   })
+    assert.equal(s.toString(), 'abcdefjklghi')
+  })
 
-//   it('moves content to the end', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     s.move(6, 9, 12)
+  it('moves content to the end', () => {
+    const s = new MagicString('abcdefghijkl')
+    s.move(6, 9, 12)
 
-//     assert.equal(s.toString(), 'abcdefjklghi')
-//   })
+    assert.equal(s.toString(), 'abcdefjklghi')
+  })
 
-//   it('ignores redundant move', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     s.prependRight(9, 'X')
-//     s.move(9, 12, 6)
-//     s.appendLeft(12, 'Y')
-//     s.move(6, 9, 12) // this is redundant – [6,9] is already after [9,12]
+  it('ignores redundant move', () => {
+    const s = new MagicString('abcdefghijkl')
+    s.prependRight(9, 'X')
+    s.move(9, 12, 6)
+    s.appendLeft(12, 'Y')
+    s.move(6, 9, 12) // this is redundant – [6,9] is already after [9,12]
 
-//     assert.equal(s.toString(), 'abcdefXjklYghi')
-//   })
+    assert.equal(s.toString(), 'abcdefXjklYghi')
+  })
 
-//   it('moves content to the middle', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     s.move(3, 6, 9)
+  it('moves content to the middle', () => {
+    const s = new MagicString('abcdefghijkl')
+    s.move(3, 6, 9)
 
-//     assert.equal(s.toString(), 'abcghidefjkl')
-//   })
+    assert.equal(s.toString(), 'abcghidefjkl')
+  })
 
-//   it('handles multiple moves of the same snippet', () => {
-//     const s = new MagicString('abcdefghijkl')
+  it('handles multiple moves of the same snippet', () => {
+    const s = new MagicString('abcdefghijkl')
 
-//     s.move(0, 3, 6)
-//     assert.equal(s.toString(), 'defabcghijkl')
+    s.move(0, 3, 6)
+    assert.equal(s.toString(), 'defabcghijkl')
 
-//     s.move(0, 3, 9)
-//     assert.equal(s.toString(), 'defghiabcjkl')
-//   })
+    s.move(0, 3, 9)
+    assert.equal(s.toString(), 'defghiabcjkl')
+  })
 
-//   it('handles moves of adjacent snippets', () => {
-//     const s = new MagicString('abcdefghijkl')
+  it('handles moves of adjacent snippets', () => {
+    const s = new MagicString('abcdefghijkl')
 
-//     s.move(0, 2, 6)
-//     assert.equal(s.toString(), 'cdefabghijkl')
+    s.move(0, 2, 6)
+    assert.equal(s.toString(), 'cdefabghijkl')
 
-//     s.move(2, 4, 6)
-//     assert.equal(s.toString(), 'efabcdghijkl')
-//   })
+    s.move(2, 4, 6)
+    assert.equal(s.toString(), 'efabcdghijkl')
+  })
 
-//   it('handles moves to same index', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     s.move(0, 2, 6).move(3, 5, 6)
+  it('handles moves to same index', () => {
+    const s = new MagicString('abcdefghijkl')
+    s.move(0, 2, 6).move(3, 5, 6)
 
-//     assert.equal(s.toString(), 'cfabdeghijkl')
-//   })
+    assert.equal(s.toString(), 'cfabdeghijkl')
+  })
 
-//   it('refuses to move a selection to inside itself', () => {
-//     const s = new MagicString('abcdefghijkl')
+  it('refuses to move a selection to inside itself', () => {
+    const s = new MagicString('abcdefghijkl')
 
-//     assert.throws(
-//       () => s.move(3, 6, 3),
-//       /Cannot move a selection inside itself/,
-//     )
+    assert.throws(
+      () => s.move(3, 6, 3),
+      /Cannot move a selection inside itself/,
+    )
 
-//     assert.throws(
-//       () => s.move(3, 6, 4),
-//       /Cannot move a selection inside itself/,
-//     )
+    assert.throws(
+      () => s.move(3, 6, 4),
+      /Cannot move a selection inside itself/,
+    )
 
-//     assert.throws(
-//       () => s.move(3, 6, 6),
-//       /Cannot move a selection inside itself/,
-//     )
-//   })
+    assert.throws(
+      () => s.move(3, 6, 6),
+      /Cannot move a selection inside itself/,
+    )
+  })
 
-//   it('allows edits of moved content', () => {
-//     const s1 = new MagicString('abcdefghijkl')
+  it('allows edits of moved content', () => {
+    const s1 = new MagicString('abcdefghijkl')
 
-//     s1.move(3, 6, 9)
-//     s1.overwrite(3, 6, 'DEF')
+    s1.move(3, 6, 9)
+    s1.overwrite(3, 6, 'DEF')
 
-//     assert.equal(s1.toString(), 'abcghiDEFjkl')
+    assert.equal(s1.toString(), 'abcghiDEFjkl')
 
-//     const s2 = new MagicString('abcdefghijkl')
+    const s2 = new MagicString('abcdefghijkl')
 
-//     s2.move(3, 6, 9)
-//     s2.overwrite(4, 5, 'E')
+    s2.move(3, 6, 9)
+    s2.overwrite(4, 5, 'E')
 
-//     assert.equal(s2.toString(), 'abcghidEfjkl')
-//   })
+    assert.equal(s2.toString(), 'abcghidEfjkl')
+  })
 
-//   // it( 'move follows inserts', () => {
-//   // 	const s = new MagicString( 'abcdefghijkl' );
-//   //
-//   // 	s.appendLeft( 3, 'X' ).move( 6, 9, 3 );
-//   // 	assert.equal( s.toString(), 'abcXghidefjkl' );
-//   // });
-//   //
-//   // it( 'inserts follow move', () => {
-//   // 	const s = new MagicString( 'abcdefghijkl' );
-//   //
-//   // 	s.insert( 3, 'X' ).move( 6, 9, 3 ).insert( 3, 'Y' );
-//   // 	assert.equal( s.toString(), 'abcXghiYdefjkl' );
-//   // });
-//   //
-//   // it( 'discards inserts at end of move by default', () => {
-//   // 	const s = new MagicString( 'abcdefghijkl' );
-//   //
-//   // 	s.insert( 6, 'X' ).move( 3, 6, 9 );
-//   // 	assert.equal( s.toString(), 'abcXghidefjkl' );
-//   // });
+  // it( 'move follows inserts', () => {
+  // 	const s = new MagicString( 'abcdefghijkl' );
+  //
+  // 	s.appendLeft( 3, 'X' ).move( 6, 9, 3 );
+  // 	assert.equal( s.toString(), 'abcXghidefjkl' );
+  // });
+  //
+  // it( 'inserts follow move', () => {
+  // 	const s = new MagicString( 'abcdefghijkl' );
+  //
+  // 	s.insert( 3, 'X' ).move( 6, 9, 3 ).insert( 3, 'Y' );
+  // 	assert.equal( s.toString(), 'abcXghiYdefjkl' );
+  // });
+  //
+  // it( 'discards inserts at end of move by default', () => {
+  // 	const s = new MagicString( 'abcdefghijkl' );
+  //
+  // 	s.insert( 6, 'X' ).move( 3, 6, 9 );
+  // 	assert.equal( s.toString(), 'abcXghidefjkl' );
+  // });
 
-//   it('moves content inserted at end of range', () => {
-//     const s = new MagicString('abcdefghijkl')
+  it('moves content inserted at end of range', () => {
+    const s = new MagicString('abcdefghijkl')
 
-//     s.appendLeft(6, 'X').move(3, 6, 9)
-//     assert.equal(s.toString(), 'abcghidefXjkl')
-//   })
+    s.appendLeft(6, 'X').move(3, 6, 9)
+    assert.equal(s.toString(), 'abcghidefXjkl')
+  })
 
-//   it('returns this', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     assert.strictEqual(s.move(3, 6, 9), s)
-//   })
-// })
+  it('returns this', () => {
+    const s = new MagicString('abcdefghijkl')
+    assert.strictEqual(s.move(3, 6, 9), s)
+  })
+})
 
 describe('overwrite', () => {
   it('should replace characters', () => {

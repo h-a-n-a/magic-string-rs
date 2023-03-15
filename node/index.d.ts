@@ -11,18 +11,18 @@ export class ExternalObject<T> {
 }
 /** Only for .d.ts type generation */
 export interface DecodedMap {
-  file?: string | undefined | null
+  file?: string
   sources: Array<string | undefined | null>
-  sourceRoot?: string | undefined | null
+  sourceRoot?: string
   sourcesContent: Array<string | undefined | null>
   names: Array<string>
   mappings: Array<Array<Array<number>>>
 }
 /** Only for .d.ts generation */
 export interface GenerateDecodedMapOptions {
-  file?: string | undefined | null
-  sourceRoot?: string | undefined | null
-  source?: string | undefined | null
+  file?: string
+  sourceRoot?: string
+  source?: string
   includeContent: boolean
   hires: boolean
 }
@@ -49,6 +49,7 @@ export class MagicString {
   trimEnd(pattern?: string | undefined | null): this
   trimLines(): this
   remove(start: number, end: number): this
+  move(start: number, end: number, index: number): this
   isEmpty(): boolean
   generateMap(options?: Partial<GenerateDecodedMapOptions>): {
     toString: () => string

@@ -631,7 +631,7 @@ impl MagicString {
     SourceMap::new_from_decoded(decoded_map)
   }
 
-  pub fn move_to(&mut self, start: i64, end: i64, index: i64) -> Result<&mut Self> {
+  pub fn _move(&mut self, start: i64, end: i64, index: i64) -> Result<&mut Self> {
     let start = normalize_index(self.original_str.as_str(), start)?;
     let end = normalize_index(self.original_str.as_str(), end)?;
     let index = normalize_index(self.original_str.as_str(), index)?;
@@ -643,7 +643,7 @@ impl MagicString {
     if index >= start && index <= end {
       return Err(Error::new_with_reason(
         MagicStringErrorType::MagicStringUnknownError,
-        "Index should be within the range of start and end.",
+        "Cannot move a selection inside itself",
       ));
     }
 
