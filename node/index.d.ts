@@ -13,16 +13,16 @@ export class ExternalObject<T> {
 export interface DecodedMap {
   file?: string
   sources: Array<string | undefined | null>
-  sourceRoot?: string
+  sourceRoot?: string | undefined | null
   sourcesContent: Array<string | undefined | null>
   names: Array<string>
   mappings: Array<Array<Array<number>>>
 }
 /** Only for .d.ts generation */
 export interface GenerateDecodedMapOptions {
-  file?: string
-  sourceRoot?: string
-  source?: string
+  file?: string | undefined | null
+  sourceRoot?: string | undefined | null
+  source?: string | undefined | null
   includeContent: boolean
   hires: boolean
 }
