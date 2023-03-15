@@ -11,7 +11,7 @@ export class ExternalObject<T> {
 }
 /** Only for .d.ts type generation */
 export interface DecodedMap {
-  file?: string
+  file?: string | undefined | null
   sources: Array<string | undefined | null>
   sourceRoot?: string | undefined | null
   sourcesContent: Array<string | undefined | null>
