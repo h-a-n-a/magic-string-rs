@@ -631,6 +631,18 @@ impl MagicString {
     SourceMap::new_from_decoded(decoded_map)
   }
 
+  /// ## Move
+  /// Moves the string between start and end to the specified position.Return `self`.
+  ///
+  /// Examples:
+  /// ```
+  /// use magic_string::MagicString;
+  /// let mut s = MagicString::new("abcdefghijkl");
+  /// s._move(3, 6, 9);
+  /// assert_eq!(s.to_string(), "abcghidefjkl");
+  ///
+  /// ```
+  ///
   pub fn _move(&mut self, start: i64, end: i64, index: i64) -> Result<&mut Self> {
     let start = normalize_index(self.original_str.as_str(), start)?;
     let end = normalize_index(self.original_str.as_str(), end)?;
