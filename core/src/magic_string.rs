@@ -634,7 +634,7 @@ impl MagicString {
   /// ## Move
   /// Moves the string between start and end to the specified position.Return `self`.
   ///
-  /// Examples:
+  /// Example:
   /// ```
   /// use magic_string::MagicString;
   /// let mut s = MagicString::new("abcdefghijkl");
