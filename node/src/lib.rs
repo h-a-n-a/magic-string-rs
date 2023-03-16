@@ -105,9 +105,8 @@ impl MagicString {
   }
 
   #[napi]
-  pub fn slice(&mut self, start: i64, end: i64) -> Result<&Self> {
-    self.0.slice(start, end)?;
-    Ok(self)
+  pub fn slice(&mut self, start: i64, end: i64) -> Result<String> {
+    Ok(self.0.slice(start, end)?)
   }
 
   #[napi]

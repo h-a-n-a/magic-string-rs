@@ -49,6 +49,7 @@ export class MagicString {
   trimEnd(pattern?: string | undefined | null): this
   trimLines(): this
   remove(start: number, end: number): this
+  slice(start: number, end: number): string
   isEmpty(): boolean
   generateMap(options?: Partial<GenerateDecodedMapOptions>): {
     toString: () => string

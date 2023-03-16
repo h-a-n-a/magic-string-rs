@@ -16,6 +16,8 @@ pub struct Chunk {
 
   pub next: Option<Rc<RefCell<Chunk>>>,
   pub prev: Option<Rc<RefCell<Chunk>>>,
+
+  pub edited: bool,
 }
 
 impl Chunk {
@@ -31,6 +33,8 @@ impl Chunk {
 
       next: None,
       prev: None,
+
+      edited: false,
     }
   }
 

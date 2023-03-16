@@ -301,6 +301,7 @@ impl MagicString {
         }
 
         chunk.borrow_mut().content = String::default();
+        chunk.borrow_mut().edited = true;
         if !content_only {
           chunk.borrow_mut().intro = String::default();
           chunk.borrow_mut().outro = String::default();
@@ -561,6 +562,12 @@ impl MagicString {
     let mut str = String::new();
 
     if first.is_some() && last.is_some() {
+      if first.clone().unwrap().borrow().edited {
+        return Err(Error::new_with_reason(
+          MagicStringErrorType::MagicStringOutOfRangeError,
+          "Cannot slice a string that has been edited.",
+        ));
+      }
       Chunk::try_each_next(Rc::clone(first.unwrap()), |chunk| {
         str.push_str(chunk.borrow().to_string().as_str());
         Ok(chunk == Rc::clone(last.unwrap()))
