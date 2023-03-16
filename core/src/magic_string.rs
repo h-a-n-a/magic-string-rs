@@ -525,6 +525,50 @@ impl MagicString {
     Ok(self)
   }
 
+  /// ## Slice
+  /// Get a slice of the modified string.
+  ///
+  /// Example:
+  /// ```
+  /// use magic_string::MagicString;
+  ///
+  /// let mut s = MagicString::new("abcdefghijkl");
+  /// assert_eq!(s.slice(1,5)?, "bcde");
+  /// assert_eq!(s.slice(1, -1)?, "bcdefghijk");
+  ///
+  /// ```
+  ///
+  pub fn slice(&mut self, start: i64, end: i64) -> Result<String> {
+    let start = normalize_index(self.original_str.as_str(), start)?;
+    let end = normalize_index(self.original_str.as_str(), end)?;
+
+    let start = start as u32;
+    let end = end as u32;
+
+    if start > end {
+      return Err(Error::new_with_reason(
+        MagicStringErrorType::MagicStringOutOfRangeError,
+        "Start must be greater than end.",
+      ));
+    }
+
+    self._split_at_index(start)?;
+    self._split_at_index(end)?;
+
+    let first = self.chunk_by_start.get(&start);
+    let last = self.chunk_by_end.get(&end);
+
+    let mut str = String::new();
+
+    if first.is_some() && last.is_some() {
+      Chunk::try_each_next(Rc::clone(first.unwrap()), |chunk| {
+        str.push_str(chunk.borrow().to_string().as_str());
+        Ok(chunk == Rc::clone(last.unwrap()))
+      })?;
+    }
+
+    Ok(str)
+  }
   /// ## Is empty
   ///
   /// Returns `true` if the resulting source is empty (disregarding white space).
