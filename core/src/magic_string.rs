@@ -1,6 +1,8 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc, string::ToString};
 
-use crate::utils::{normalize_index, trim};
+use crate::utils::{guess_indent, normalize_index, trim};
+
+use regex::Regex;
 
 #[cfg(feature = "node-api")]
 use napi_derive::napi;
@@ -72,6 +74,8 @@ pub struct MagicString {
   last_searched_chunk: Rc<RefCell<Chunk>>,
   first_chunk: Rc<RefCell<Chunk>>,
   last_chunk: Rc<RefCell<Chunk>>,
+
+  indent_str: String,
 }
 
 impl MagicString {
@@ -104,6 +108,8 @@ impl MagicString {
       last_searched_chunk: Rc::clone(&original_chunk),
 
       original_str_locator: Locator::new(str),
+
+      indent_str: String::default(),
     }
   }
 
@@ -525,6 +531,71 @@ impl MagicString {
     Ok(self)
   }
 
+  /// ## Indent
+  /// Indents the string by the given number of spaces. Returns `self`.
+  ///
+  /// Example:
+  /// ```
+  /// use magic_string::MagicString;
+  ///
+  /// let mut s = MagicString::new("abc\ndef\nghi\njkl");
+  ///
+  /// ```
+  ///
+  pub fn indent(&mut self) -> Result<&mut Self> {
+    let pattern = Regex::new(r"^[^\r\n]")?;
+    if self.indent_str.len() == 0 {
+      self._ensure_indent_str();
+    };
+    let indent_str = self.indent_str.clone();
+
+    let replacer = |input: &str| {
+      let mut s = input.to_string();
+      pattern.find_iter(input).for_each(|m| {
+        let start = m.start();
+        let end = m.end();
+        s.replace_range(start..end, format!("{}{}", indent_str, m.as_str()).as_str());
+      });
+      s
+    };
+    self.intro = replacer(&self.intro);
+    let mut chunk = Some(Rc::clone(&self.first_chunk));
+    let mut should_indent_next_character = true;
+    while let Some(c) = chunk.clone() {
+      if c.borrow().is_content_edited() {
+        c.borrow_mut().content = replacer(c.borrow().content.as_str());
+      }
+      let mut char_index = c.borrow().start;
+      while char_index < c.borrow().end {
+        let char = self
+          .original_str
+          .as_str()
+          .chars()
+          .nth(char_index as usize)
+          .unwrap();
+        if char == '\n' {
+          should_indent_next_character = true;
+        } else if char != '\n' && should_indent_next_character {
+          should_indent_next_character = false;
+          if char_index == c.borrow().start {
+            c.borrow_mut().prepend_intro(&indent_str);
+          } else {
+            self._split_at_index(char_index)?;
+            let next_chunk = c.borrow().next.clone();
+            chunk = next_chunk.clone();
+            if let Some(next_chunk) = next_chunk.clone() {
+              next_chunk.borrow_mut().prepend_intro(&indent_str);
+            }
+          }
+        }
+        char_index += 1;
+      }
+      chunk = c.borrow().next.clone();
+    }
+
+    self.outro = replacer(&self.outro);
+    Ok(self)
+  }
   /// ## Is empty
   ///
   /// Returns `true` if the resulting source is empty (disregarding white space).
@@ -683,6 +754,13 @@ impl MagicString {
 
     self.last_searched_chunk = Rc::clone(&chunk);
 
+    Ok(())
+  }
+
+  pub fn _ensure_indent_str(&mut self) -> Result {
+    if self.indent_str.len() == 0 {
+      self.indent_str = guess_indent(&self.original_str)?
+    }
     Ok(())
   }
 }
