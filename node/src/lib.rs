@@ -105,6 +105,11 @@ impl MagicString {
   }
 
   #[napi]
+  pub fn slice(&mut self, start: i64, end: i64) -> Result<String> {
+    Ok(self.0.slice(start, end)?)
+  }
+
+  #[napi]
   pub fn is_empty(&self) -> Result<bool> {
     Ok(self.0.is_empty())
   }

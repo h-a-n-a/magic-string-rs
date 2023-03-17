@@ -525,6 +525,89 @@ impl MagicString {
     Ok(self)
   }
 
+  /// ## Slice
+  /// Get a slice of the modified string.
+  /// Example:
+  /// ```
+  /// use magic_string::MagicString;
+  /// let mut s = MagicString::new("abcdefghijkl");
+  ///
+  ///
+  /// ```
+  ///
+  pub fn slice(&mut self, start: i64, end: i64) -> Result<String> {
+    let start = normalize_index(self.original_str.as_str(), start)?;
+    let end = normalize_index(self.original_str.as_str(), end)?;
+
+    let start = start as u32;
+    let end = end as u32;
+
+    if start > end {
+      return Err(Error::new_with_reason(
+        MagicStringErrorType::MagicStringOutOfRangeError,
+        "Start must be greater than end.",
+      ));
+    }
+
+    let mut result = String::new();
+    let mut chunk = Some(Rc::clone(&self.first_chunk));
+    while let Some(c) = chunk.clone() {
+      if c.borrow().start > start || c.borrow().end <= start {
+        chunk = c.borrow().clone().next;
+      } else {
+        break;
+      }
+    }
+    if let Some(c) = chunk.clone() {
+      if c.borrow().is_content_edited() && c.borrow().start != start {
+        return Err(Error::new_with_reason(
+          MagicStringErrorType::MagicStringUnknownError,
+          "Cannot move a selection inside itself",
+        ));
+      }
+    }
+    let start_chunk = chunk.clone().unwrap();
+    Chunk::try_each_next(Rc::clone(&chunk.unwrap()), |chunk| {
+      let str: &str;
+
+      if chunk.borrow().intro.len() != 0 && (start_chunk != chunk || chunk.borrow().start == start)
+      {
+        result.push_str(chunk.borrow().intro.as_str());
+      };
+
+      let contain_end = chunk.borrow().end >= end;
+
+      let slice_start = if chunk.borrow().start < start {
+        start - chunk.borrow().start
+      } else {
+        0
+      };
+      let slice_end = if contain_end {
+        chunk.borrow().content.len() as u32 + end - chunk.borrow().end
+      } else {
+        chunk.borrow().content.len() as u32
+      };
+
+      let chunk_str = chunk.borrow().content.clone();
+
+      if contain_end && chunk.borrow().is_content_edited() && chunk.borrow().end != end {
+        return Err(Error::new_with_reason(
+          MagicStringErrorType::MagicStringUnknownError,
+          "Cannot use replaced character ${end} as slice end anchor.",
+        ));
+      }
+
+      str = &chunk_str.as_str()[slice_start as usize..slice_end as usize];
+      result.push_str(str);
+      if chunk.borrow().outro.len() != 0 && (!contain_end || chunk.borrow().end == end) {
+        result.push_str(chunk.borrow().outro.as_str())
+      }
+
+      Ok(chunk.borrow().end >= end)
+    })?;
+
+    Ok(result)
+  }
   /// ## Is empty
   ///
   /// Returns `true` if the resulting source is empty (disregarding white space).
