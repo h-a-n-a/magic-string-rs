@@ -60,6 +60,12 @@ pub struct DecodedMap {
   pub mappings: Mappings,
 }
 
+#[cfg(feature = "node-api")]
+#[derive(Debug, Default, Clone)]
+pub struct IndentOptions {
+  pub indent_str: String,
+}
+
 #[derive(Debug, Clone)]
 pub struct MagicString {
   original_str: String,
@@ -542,12 +548,15 @@ impl MagicString {
   ///
   /// ```
   ///
-  pub fn indent(&mut self) -> Result<&mut Self> {
+  pub fn indent(&mut self, option: IndentOptions) -> Result<&mut Self> {
+    let mut indent_str = option.indent_str;
     let pattern = Regex::new(r"^[^\r\n]")?;
-    if self.indent_str.len() == 0 {
-      self._ensure_indent_str();
+    if indent_str.len() == 0 {
+      if self.indent_str.len() == 0 {
+        self._ensure_indent_str()?;
+      }
+      indent_str = self.indent_str.clone();
     };
-    let indent_str = self.indent_str.clone();
 
     let replacer = |input: &str| {
       let mut s = input.to_string();
