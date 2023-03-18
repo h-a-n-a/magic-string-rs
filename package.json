@@ -27,7 +27,7 @@
     "test": "mocha -r @swc-node/register node/tests/**/*.spec.ts"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^2.0.0",
+    "@napi-rs/cli": "^2.14.8",
     "@swc-node/register": "^1.4.0",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.11.12",

@@ -1,3 +1,4 @@
+use base64::Engine;
 use serde::Serialize;
 
 use crate::magic_string::DecodedMap;
@@ -88,7 +89,7 @@ impl SourceMap {
 
     Ok(format!(
       "data:application/json;charset=utf-8;base64,{}",
-      base64::encode(str)
+      base64::engine::general_purpose::STANDARD.encode(str)
     ))
   }
 }
