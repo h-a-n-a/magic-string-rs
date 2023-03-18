@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.14.8",
-    "@swc-node/register": "^1.4.0",
+    "@swc-node/register": "^1.6.2",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.11.12",
     "@types/source-map": "^0.5.7",
