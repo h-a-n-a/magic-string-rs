@@ -61,9 +61,26 @@ pub struct DecodedMap {
 }
 
 #[cfg(feature = "node-api")]
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct IndentOptions {
   pub indent_str: String,
+  pub exclude: Vec<u32>,
+}
+
+#[cfg(not(feature = "node-api"))]
+#[derive(Debug, Clone)]
+pub struct IndentOptions {
+  pub indent_str: String,
+  pub exclude: Vec<u32>,
+}
+
+impl Default for IndentOptions {
+  fn default() -> Self {
+    Self {
+      indent_str: String::from(""),
+      exclude: vec![u32::MAX, u32::MAX],
+    }
+  }
 }
 
 #[derive(Debug, Clone)]
@@ -550,7 +567,9 @@ impl MagicString {
   ///
   pub fn indent(&mut self, option: IndentOptions) -> Result<&mut Self> {
     let mut indent_str = option.indent_str;
-    let pattern = Regex::new(r"^[^\r\n]")?;
+    let pattern = Regex::new(r"^\r\n")?;
+    let exclude_start = option.exclude[0];
+    let exclude_end = option.exclude[1];
     if indent_str.len() == 0 {
       if self.indent_str.len() == 0 {
         self._ensure_indent_str()?;
@@ -570,34 +589,53 @@ impl MagicString {
     self.intro = replacer(&self.intro);
     let mut chunk = Some(Rc::clone(&self.first_chunk));
     let mut should_indent_next_character = true;
+    let mut char_index = 0;
     while let Some(c) = chunk.clone() {
       if c.borrow().is_content_edited() {
-        c.borrow_mut().content = replacer(c.borrow().content.as_str());
-      }
-      let mut char_index = c.borrow().start;
-      while char_index < c.borrow().end {
-        let char = self
-          .original_str
-          .as_str()
-          .chars()
-          .nth(char_index as usize)
-          .unwrap();
-        if char == '\n' {
-          should_indent_next_character = true;
-        } else if char != '\n' && should_indent_next_character {
-          should_indent_next_character = false;
-          if char_index == c.borrow().start {
-            c.borrow_mut().prepend_intro(&indent_str);
-          } else {
-            self._split_at_index(char_index)?;
-            let next_chunk = c.borrow().next.clone();
-            chunk = next_chunk.clone();
-            if let Some(next_chunk) = next_chunk.clone() {
-              next_chunk.borrow_mut().prepend_intro(&indent_str);
-            }
+        if !(char_index >= exclude_start && char_index <= exclude_end) {
+          let content = c.borrow().content.to_string();
+          c.borrow_mut().content = replacer(&content);
+          if content.len() != 0 {
+            should_indent_next_character = c
+              .borrow()
+              .content
+              .as_str()
+              .chars()
+              .nth(content.len() - 1)
+              .unwrap()
+              == '\n';
           }
         }
-        char_index += 1;
+      } else {
+        char_index = c.borrow().start;
+        while char_index < c.borrow().end {
+          if char_index >= exclude_start && char_index <= exclude_end {
+            char_index += 1;
+            continue;
+          }
+          let char = self
+            .original_str
+            .as_str()
+            .chars()
+            .nth(char_index as usize)
+            .unwrap();
+          if char == '\n' {
+            should_indent_next_character = true;
+          } else if char != '\r' && should_indent_next_character {
+            should_indent_next_character = false;
+            if char_index == c.borrow().start {
+              c.borrow_mut().prepend_intro(&indent_str);
+            } else {
+              self._split_at_index(char_index)?;
+              let next_chunk = c.borrow().next.clone();
+              chunk = next_chunk.clone();
+              if let Some(next_chunk) = next_chunk.clone() {
+                next_chunk.borrow_mut().prepend_intro(&indent_str);
+              }
+            }
+          }
+          char_index += 1;
+        }
       }
       chunk = c.borrow().next.clone();
     }
