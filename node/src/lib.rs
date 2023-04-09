@@ -57,6 +57,13 @@ impl MagicString {
     Ok(self)
   }
 
+  #[napi]
+  pub fn clone(&mut self) -> Result<MagicString> {
+    // Ok(self.0.clone().unwrap())
+    // self.0.clone()
+    Ok(MagicString(self.0.clone().unwrap()))
+  }
+
   #[napi(ts_args_type = r"
     start: number,
     end: number,
