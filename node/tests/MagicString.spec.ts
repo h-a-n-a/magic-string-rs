@@ -110,89 +110,89 @@ describe('MagicString', () => {
     })
   })
 
-  // describe('clone', () => {
-  //   it('should clone a magic string', () => {
-  //     const s = new MagicString('abcdefghijkl')
+  describe('clone', () => {
+    it('should clone a magic string', () => {
+      const s = new MagicString('abcdefghijkl')
 
-  //     s.overwrite(3, 9, 'XYZ')
-  //     const c = s.clone()
+      s.overwrite(3, 9, 'XYZ')
+      const c = s.clone()
 
-  //     assert.notEqual(s, c)
-  //     assert.equal(c.toString(), 'abcXYZjkl')
-  //   })
+      assert.notEqual(s, c)
+      assert.equal(c.toString(), 'abcXYZjkl')
+    })
 
-  //   it('should clone filename info', () => {
-  //     const s = new MagicString('abcdefghijkl', { filename: 'foo.js' })
-  //     const c = s.clone()
+    /* it('should clone filename info', () => {
+      const s = new MagicString('abcdefghijkl', { filename: 'foo.js' })
+      const c = s.clone()
 
-  //     assert.equal(c.filename, 'foo.js')
-  //   })
+      assert.equal(c.filename, 'foo.js')
+    })
 
-  //   it('should clone indentExclusionRanges', () => {
-  //     const array = [3, 6]
-  //     const source = new MagicString('abcdefghijkl', {
-  //       filename: 'foo.js',
-  //       indentExclusionRanges: array,
-  //     })
+    it('should clone indentExclusionRanges', () => {
+      const array = [3, 6]
+      const source = new MagicString('abcdefghijkl', {
+        filename: 'foo.js',
+        indentExclusionRanges: array,
+      })
 
-  //     const clone = source.clone()
+      const clone = source.clone()
 
-  //     assert.notStrictEqual(
-  //       source.indentExclusionRanges,
-  //       clone.indentExclusionRanges,
-  //     )
-  //     assert.deepEqual(
-  //       source.indentExclusionRanges,
-  //       clone.indentExclusionRanges,
-  //     )
-  //   })
+      assert.notStrictEqual(
+        source.indentExclusionRanges,
+        clone.indentExclusionRanges,
+      )
+      assert.deepEqual(
+        source.indentExclusionRanges,
+        clone.indentExclusionRanges,
+      )
+    })
 
-  //   it('should clone complex indentExclusionRanges', () => {
-  //     const array = [
-  //       [3, 6],
-  //       [7, 9],
-  //     ]
-  //     const source = new MagicString('abcdefghijkl', {
-  //       filename: 'foo.js',
-  //       indentExclusionRanges: array,
-  //     })
+    it('should clone complex indentExclusionRanges', () => {
+      const array = [
+        [3, 6],
+        [7, 9],
+      ]
+      const source = new MagicString('abcdefghijkl', {
+        filename: 'foo.js',
+        indentExclusionRanges: array,
+      })
 
-  //     const clone = source.clone()
+      const clone = source.clone()
 
-  //     assert.notStrictEqual(
-  //       source.indentExclusionRanges,
-  //       clone.indentExclusionRanges,
-  //     )
-  //     assert.deepEqual(
-  //       source.indentExclusionRanges,
-  //       clone.indentExclusionRanges,
-  //     )
-  //   })
+      assert.notStrictEqual(
+        source.indentExclusionRanges,
+        clone.indentExclusionRanges,
+      )
+      assert.deepEqual(
+        source.indentExclusionRanges,
+        clone.indentExclusionRanges,
+      )
+    })
 
-  //   it('should clone sourcemapLocations', () => {
-  //     const source = new MagicString('abcdefghijkl', {
-  //       filename: 'foo.js',
-  //     })
+    it('should clone sourcemapLocations', () => {
+      const source = new MagicString('abcdefghijkl', {
+        filename: 'foo.js',
+      })
 
-  //     source.addSourcemapLocation(3)
+      source.addSourcemapLocation(3)
 
-  //     const clone = source.clone()
+      const clone = source.clone()
 
-  //     assert.notStrictEqual(source.sourcemapLocations, clone.sourcemapLocations)
-  //     assert.deepEqual(source.sourcemapLocations, clone.sourcemapLocations)
-  //   })
+      assert.notStrictEqual(source.sourcemapLocations, clone.sourcemapLocations)
+      assert.deepEqual(source.sourcemapLocations, clone.sourcemapLocations)
+    }) */
 
-  //   it('should clone intro and outro', () => {
-  //     const source = new MagicString('defghi')
+    it('should clone intro and outro', () => {
+      const source = new MagicString('defghi')
 
-  //     source.prepend('abc')
-  //     source.append('jkl')
+      source.prepend('abc')
+      source.append('jkl')
 
-  //     const clone = source.clone()
+      const clone = source.clone()
 
-  //     assert.equal(source.toString(), clone.toString())
-  //   })
-  // })
+      assert.equal(source.toString(), clone.toString())
+    })
+  })
 
   describe('generateMap', () => {
     it('should generate a sourcemap', () => {
@@ -1094,152 +1094,153 @@ describe('remove', () => {
   // })
 })
 
-// describe('slice', () => {
-//   it('should return the generated content between the specified original characters', () => {
-//     const s = new MagicString('abcdefghijkl')
+describe('slice', () => {
+  it('should return the generated content between the specified original characters', () => {
+    const s = new MagicString('abcdefghijkl')
 
-//     assert.equal(s.slice(3, 9), 'defghi')
-//     s.overwrite(4, 8, 'XX')
-//     assert.equal(s.slice(3, 9), 'dXXi')
-//     s.overwrite(2, 10, 'ZZ')
-//     assert.equal(s.slice(1, 11), 'bZZk')
-//     assert.equal(s.slice(2, 10), 'ZZ')
+    assert.equal(s.slice(3, 9), 'defghi')
+    s.overwrite(4, 8, 'XX')
+    assert.equal(s.slice(3, 9), 'dXXi')
+    s.overwrite(2, 10, 'ZZ')
+    assert.equal(s.slice(1, 11), 'bZZk')
+    assert.equal(s.slice(2, 10), 'ZZ')
 
-//     assert.throws(() => s.slice(3, 9))
-//   })
+    assert.throws(() => s.slice(3, 9))
+  })
 
-//   it('defaults `end` to the original string length', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     assert.equal(s.slice(3), 'defghijkl')
-//   })
+  // it('defaults `end` to the original string length', () => {
+  //   const s = new MagicString('abcdefghijkl')
+  //   assert.equal(s.slice(3), 'defghijkl')
+  // })
 
-//   it('allows negative numbers as arguments', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     assert.equal(s.slice(-3), 'jkl')
-//     assert.equal(s.slice(0, -3), 'abcdefghi')
-//   })
+  it('allows negative numbers as arguments', () => {
+    const s = new MagicString('abcdefghijkl')
+    // assert.equal(s.slice(-3), 'jkl')
+    assert.equal(s.slice(0, -3), 'abcdefghi')
+  })
 
-//   it('includes inserted characters, respecting insertion direction', () => {
-//     const s = new MagicString('abefij')
+  it('includes inserted characters, respecting insertion direction', () => {
+    const s = new MagicString('abefij')
 
-//     s.prependRight(2, 'cd')
-//     s.appendLeft(4, 'gh')
+    s.prependRight(2, 'cd')
+    s.appendLeft(4, 'gh')
 
-//     assert.equal(s.slice(), 'abcdefghij')
-//     assert.equal(s.slice(1, 5), 'bcdefghi')
-//     assert.equal(s.slice(2, 4), 'cdefgh')
-//     assert.equal(s.slice(3, 4), 'fgh')
-//     assert.equal(s.slice(0, 2), 'ab')
-//     assert.equal(s.slice(0, 3), 'abcde')
-//     assert.equal(s.slice(4, 6), 'ij')
-//     assert.equal(s.slice(3, 6), 'fghij')
-//   })
+    // assert.equal(s.slice(), 'abcdefghij')
+    assert.equal(s.slice(1, 5), 'bcdefghi')
+    assert.equal(s.slice(2, 4), 'cdefgh')
+    assert.equal(s.slice(3, 4), 'fgh')
+    assert.equal(s.slice(0, 2), 'ab')
+    assert.equal(s.slice(0, 3), 'abcde')
+    assert.equal(s.slice(4, 6), 'ij')
+    assert.equal(s.slice(3, 6), 'fghij')
+  })
 
-//   it('supports characters moved outward', () => {
-//     const s = new MagicString('abcdEFghIJklmn')
+  // it('supports characters moved outward', () => {
+  //   const s = new MagicString('abcdEFghIJklmn')
 
-//     s.move(4, 6, 2)
-//     s.move(8, 10, 12)
-//     assert.equal(s.toString(), 'abEFcdghklIJmn')
+  //   s.move(4, 6, 2)
+  //   s.move(8, 10, 12)
+  //   assert.equal(s.toString(), 'abEFcdghklIJmn')
 
-//     assert.equal(s.slice(1, -1), 'bEFcdghklIJm')
-//     assert.equal(s.slice(2, -2), 'cdghkl')
-//     assert.equal(s.slice(3, -3), 'dghk')
-//     assert.equal(s.slice(4, -4), 'EFcdghklIJ')
-//     assert.equal(s.slice(5, -5), 'FcdghklI')
-//     assert.equal(s.slice(6, -6), 'gh')
-//   })
+  //   assert.equal(s.slice(1, -1), 'bEFcdghklIJm')
+  //   assert.equal(s.slice(2, -2), 'cdghkl')
+  //   assert.equal(s.slice(3, -3), 'dghk')
+  //   assert.equal(s.slice(4, -4), 'EFcdghklIJ')
+  //   assert.equal(s.slice(5, -5), 'FcdghklI')
+  //   assert.equal(s.slice(6, -6), 'gh')
+  // })
 
-//   it('supports characters moved inward', () => {
-//     const s = new MagicString('abCDefghijKLmn')
+  // it('supports characters moved inward', () => {
+  //   const s = new MagicString('abCDefghijKLmn')
 
-//     s.move(2, 4, 6)
-//     s.move(10, 12, 8)
-//     assert.equal(s.toString(), 'abefCDghKLijmn')
+  //   s.move(2, 4, 6)
+  //   s.move(10, 12, 8)
+  //   assert.equal(s.toString(), 'abefCDghKLijmn')
 
-//     assert.equal(s.slice(1, -1), 'befCDghKLijm')
-//     assert.equal(s.slice(2, -2), 'CDghKL')
-//     assert.equal(s.slice(3, -3), 'DghK')
-//     assert.equal(s.slice(4, -4), 'efCDghKLij')
-//     assert.equal(s.slice(5, -5), 'fCDghKLi')
-//     assert.equal(s.slice(6, -6), 'gh')
-//   })
+  //   assert.equal(s.slice(1, -1), 'befCDghKLijm')
+  //   assert.equal(s.slice(2, -2), 'CDghKL')
+  //   assert.equal(s.slice(3, -3), 'DghK')
+  //   assert.equal(s.slice(4, -4), 'efCDghKLij')
+  //   assert.equal(s.slice(5, -5), 'fCDghKLi')
+  //   assert.equal(s.slice(6, -6), 'gh')
+  // })
 
-//   it('supports characters moved opposing', () => {
-//     const s = new MagicString('abCDefghIJkl')
+  // it('supports characters moved opposing', () => {
+  //   const s = new MagicString('abCDefghIJkl')
 
-//     s.move(2, 4, 8)
-//     s.move(8, 10, 4)
-//     assert.equal(s.toString(), 'abIJefghCDkl')
+  //   s.move(2, 4, 8)
+  //   s.move(8, 10, 4)
+  //   assert.equal(s.toString(), 'abIJefghCDkl')
 
-//     assert.equal(s.slice(1, -1), 'bIJefghCDk')
-//     assert.equal(s.slice(2, -2), '')
-//     assert.equal(s.slice(3, -3), '')
-//     assert.equal(s.slice(-3, 3), 'JefghC')
-//     assert.equal(s.slice(4, -4), 'efgh')
-//     assert.equal(s.slice(0, 3), 'abIJefghC')
-//     assert.equal(s.slice(3), 'Dkl')
-//     assert.equal(s.slice(0, -3), 'abI')
-//     assert.equal(s.slice(-3), 'JefghCDkl')
-//   })
+  //   assert.equal(s.slice(1, -1), 'bIJefghCDk')
+  //   assert.equal(s.slice(2, -2), '')
+  //   assert.equal(s.slice(3, -3), '')
+  //   assert.equal(s.slice(-3, 3), 'JefghC')
+  //   assert.equal(s.slice(4, -4), 'efgh')
+  //   assert.equal(s.slice(0, 3), 'abIJefghC')
+  //   assert.equal(s.slice(3), 'Dkl')
+  //   assert.equal(s.slice(0, -3), 'abI')
+  //   assert.equal(s.slice(-3), 'JefghCDkl')
+  // })
 
-//   it('errors if replaced characters are used as slice anchors', () => {
-//     const s = new MagicString('abcdef')
-//     s.overwrite(2, 4, 'CD')
+  // it('errors if replaced characters are used as slice anchors', () => {
+  //   const s = new MagicString('abcdef')
+  //   s.overwrite(2, 4, 'CD')
 
-//     assert.throws(() => s.slice(2, 3), /slice end anchor/)
+  //   assert.throws(() => s.slice(2, 3), /slice end anchor/)
 
-//     assert.throws(() => s.slice(3, 4), /slice start anchor/)
+  //   assert.throws(() => s.slice(3, 4), /slice start anchor/)
 
-//     assert.throws(() => s.slice(3, 5), /slice start anchor/)
+  //   assert.throws(() => s.slice(3, 5), /slice start anchor/)
 
-//     assert.equal(s.slice(1, 5), 'bCDe')
-//   })
+  //   assert.equal(s.slice(1, 5), 'bCDe')
+  // })
 
-//   it('does not error if slice is after removed characters', () => {
-//     const s = new MagicString('abcdef')
+  it('does not error if slice is after removed characters', () => {
+    const s = new MagicString('abcdef')
 
-//     s.remove(0, 2)
+    s.remove(0, 2)
 
-//     assert.equal(s.slice(2, 4), 'cd')
-//   })
-// })
+    assert.equal(s.slice(2, 4), 'cd')
+  })
+})
 
-// describe('snip', () => {
-//   it('should return a clone with content outside `start` and `end` removed', () => {
-//     const s = new MagicString('abcdefghijkl', {
-//       filename: 'foo.js',
-//     })
+describe('snip', () => {
+  it('should return a clone with content outside `start` and `end` removed', () => {
+    /* const s = new MagicString('abcdefghijkl', {
+      filename: 'foo.js',
+    }) */
+    const s = new MagicString('abcdefghijkl')
 
-//     s.overwrite(6, 9, 'GHI')
+    s.overwrite(6, 9, 'GHI')
 
-//     const snippet = s.snip(3, 9)
-//     assert.equal(snippet.toString(), 'defGHI')
-//     assert.equal(snippet.filename, 'foo.js')
-//   })
+    const snippet = s.snip(3, 9)
+    assert.equal(snippet.toString(), 'defGHI')
+    // assert.equal(snippet.filename, 'foo.js')
+  })
 
-//   it('should snip from the start', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     const snippet = s.snip(0, 6)
+  it('should snip from the start', () => {
+    const s = new MagicString('abcdefghijkl')
+    const snippet = s.snip(0, 6)
 
-//     assert.equal(snippet.toString(), 'abcdef')
-//   })
+    assert.equal(snippet.toString(), 'abcdef')
+  })
 
-//   it('should snip from the end', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     const snippet = s.snip(6, 12)
+  it('should snip from the end', () => {
+    const s = new MagicString('abcdefghijkl')
+    const snippet = s.snip(6, 12)
 
-//     assert.equal(snippet.toString(), 'ghijkl')
-//   })
+    assert.equal(snippet.toString(), 'ghijkl')
+  })
 
-//   it('should respect original indices', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     const snippet = s.snip(3, 9)
+  it('should respect original indices', () => {
+    const s = new MagicString('abcdefghijkl')
+    const snippet = s.snip(3, 9)
 
-//     snippet.overwrite(6, 9, 'GHI')
-//     assert.equal(snippet.toString(), 'defGHI')
-//   })
-// })
+    snippet.overwrite(6, 9, 'GHI')
+    assert.equal(snippet.toString(), 'defGHI')
+  })
+})
 
 describe('trim', () => {
   it('should trim original content', () => {

@@ -11,18 +11,18 @@ export class ExternalObject<T> {
 }
 /** Only for .d.ts type generation */
 export interface DecodedMap {
-  file?: string | undefined | null
+  file?: string
   sources: Array<string | undefined | null>
-  sourceRoot?: string | undefined | null
+  sourceRoot?: string
   sourcesContent: Array<string | undefined | null>
   names: Array<string>
   mappings: Array<Array<Array<number>>>
 }
 /** Only for .d.ts generation */
 export interface GenerateDecodedMapOptions {
-  file?: string | undefined | null
-  sourceRoot?: string | undefined | null
-  source?: string | undefined | null
+  file?: string
+  sourceRoot?: string
+  source?: string
   includeContent: boolean
   hires: boolean
 }
@@ -32,12 +32,15 @@ export interface OverwriteOptions {
 }
 export class MagicString {
   constructor(originalStr: string)
+  get original(): string
   append(input: string): this
   prepend(input: string): this
   appendLeft(index: number, input: string): this
   appendRight(index: number, input: string): this
   prependLeft(index: number, input: string): this
   prependRight(index: number, input: string): this
+  clone(): MagicString
+  snip(start: number, end: number): MagicString
   overwrite(
     start: number,
     end: number,
@@ -49,6 +52,7 @@ export class MagicString {
   trimEnd(pattern?: string | undefined | null): this
   trimLines(): this
   remove(start: number, end: number): this
+  slice(start: number, end: number): string
   isEmpty(): boolean
   generateMap(options?: Partial<GenerateDecodedMapOptions>): {
     toString: () => string

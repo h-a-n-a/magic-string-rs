@@ -21,6 +21,11 @@ impl MagicString {
     MagicString(magic_string::MagicString::new(original_str.as_str()))
   }
 
+  #[napi(getter)]
+  pub fn original(&self) -> Result<String> {
+    Ok(self.0.original.clone())
+  }
+
   #[napi]
   pub fn append(&mut self, input: String) -> Result<&Self> {
     self.0.append(input.as_str())?;
@@ -55,6 +60,16 @@ impl MagicString {
   pub fn prepend_right(&mut self, index: u32, input: String) -> Result<&Self> {
     self.0.prepend_right(index, input.as_str())?;
     Ok(self)
+  }
+
+  #[napi]
+  pub fn clone(&mut self) -> Result<MagicString> {
+    Ok(MagicString(self.0.clone()?))
+  }
+
+  #[napi]
+  pub fn snip(&mut self, start: i64, end: i64) -> Result<MagicString> {
+    Ok(MagicString(self.0.snip(start, end)?))
   }
 
   #[napi(ts_args_type = r"
@@ -102,6 +117,11 @@ impl MagicString {
   pub fn remove(&mut self, start: i64, end: i64) -> Result<&Self> {
     self.0.remove(start, end)?;
     Ok(self)
+  }
+
+  #[napi]
+  pub fn slice(&mut self, start: i64, end: i64) -> Result<String> {
+    Ok(self.0.slice(start, end)?)
   }
 
   #[napi]

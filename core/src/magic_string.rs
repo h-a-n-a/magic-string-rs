@@ -1,4 +1,11 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc, string::ToString};
+use std::{
+  borrow::{Borrow, BorrowMut},
+  cell::RefCell,
+  collections::HashMap,
+  ops::Deref,
+  rc::Rc,
+  string::ToString,
+};
 
 use crate::utils::{normalize_index, trim};
 
@@ -60,7 +67,7 @@ pub struct DecodedMap {
 
 #[derive(Debug, Clone)]
 pub struct MagicString {
-  original_str: String,
+  pub original: String,
   original_str_locator: Locator,
 
   intro: String,
@@ -91,7 +98,7 @@ impl MagicString {
     let original_chunk = Rc::new(RefCell::new(Chunk::new(0u32, str.len() as u32, str)));
 
     MagicString {
-      original_str: String::from(str),
+      original: String::from(str),
 
       intro: String::default(),
       outro: String::default(),
@@ -156,7 +163,8 @@ impl MagicString {
     self._split_at_index(index)?;
 
     if let Some(chunk) = self.chunk_by_end.get(&index) {
-      chunk.borrow_mut().prepend_outro(str);
+      // chunk.borrow_mut().prepend_outro(str);
+      chunk.deref().borrow_mut().prepend_outro(str);
     } else {
       self.intro = format!("{}{}", str, self.intro)
     };
@@ -171,7 +179,7 @@ impl MagicString {
     self._split_at_index(index)?;
 
     if let Some(chunk) = self.chunk_by_start.get(&index) {
-      chunk.borrow_mut().prepend_intro(str);
+      chunk.deref().borrow_mut().prepend_intro(str);
     } else {
       self.outro = format!("{}{}", str, self.outro)
     };
@@ -187,7 +195,7 @@ impl MagicString {
     self._split_at_index(index)?;
 
     if let Some(chunk) = self.chunk_by_end.get(&index) {
-      chunk.borrow_mut().append_outro(str);
+      chunk.deref().borrow_mut().append_outro(str);
     } else {
       self.intro = format!("{}{}", self.intro, str);
     };
@@ -203,12 +211,71 @@ impl MagicString {
     self._split_at_index(index)?;
 
     if let Some(chunk) = self.chunk_by_start.get(&index) {
-      chunk.borrow_mut().append_intro(str);
+      chunk.deref().borrow_mut().append_intro(str);
     } else {
       self.append(str)?;
     };
 
     Ok(self)
+  }
+
+  pub fn clone(&self) -> Result<MagicString> {
+    let mut cloned = MagicString::new(self.original.borrow());
+
+    let mut original_chunk = Rc::clone(&self.first_chunk);
+    let mut cloned_chunk = Rc::new(RefCell::new(original_chunk.deref().borrow().clone()));
+    cloned.last_searched_chunk = Rc::clone(&cloned_chunk);
+    cloned.first_chunk = Rc::clone(&cloned_chunk);
+
+    while let Some(c) = Some(Rc::clone(&original_chunk)) {
+      cloned
+        .chunk_by_start
+        .remove(&cloned_chunk.deref().borrow().start);
+      cloned
+        .chunk_by_end
+        .remove(&cloned_chunk.deref().borrow().end);
+
+      cloned.chunk_by_start.insert(
+        cloned_chunk.deref().borrow().start,
+        Rc::clone(&cloned_chunk),
+      );
+      cloned
+        .chunk_by_end
+        .insert(cloned_chunk.deref().borrow().end, Rc::clone(&cloned_chunk));
+      // cloned.chunk_by_start[&cloned_chunk.deref().borrow().start] = Rc::clone(&cloned_chunk) ;
+      // cloned.chunk_by_end[&cloned_chunk.deref().borrow().end] = Rc::clone(&cloned_chunk);
+
+      let original_chunk_clone = original_chunk.clone();
+      let next_original_chunk = &original_chunk_clone.deref().borrow().next;
+      let next_cloned_chunk = match next_original_chunk {
+        None => None,
+        Some(chunk) => Some(Rc::new(RefCell::new(chunk.deref().borrow().clone())))
+      };
+
+      match next_cloned_chunk {
+        None => {
+          break;
+        }
+        Some(chunk) => {
+          cloned_chunk.deref().borrow_mut().next = Some(Rc::clone(&chunk));
+          chunk.deref().borrow_mut().prev = Some(Rc::clone(&cloned_chunk));
+          cloned_chunk = chunk;
+          original_chunk = Rc::clone(next_original_chunk.as_ref().unwrap());
+        }
+      }
+    }
+
+    cloned.last_chunk = cloned_chunk;
+    // TODO:
+    /* if (this.indentExclusionRanges) {
+        cloned.indentExclusionRanges = this.indentExclusionRanges.slice();
+    }
+
+    cloned.sourcemapLocations = new BitSet(this.sourcemapLocations); */
+    cloned.intro = self.intro.clone();
+    cloned.outro = self.outro.clone();
+
+    Ok(cloned)
   }
 
   /// ## Overwrite
@@ -236,12 +303,14 @@ impl MagicString {
     content: &str,
     options: OverwriteOptions,
   ) -> Result<&mut Self> {
+
     let content_only = options.content_only;
-    let start = normalize_index(self.original_str.as_str(), start)?;
-    let end = normalize_index(self.original_str.as_str(), end)?;
+    let start = normalize_index(self.original.as_str(), start)?;
+    let end = normalize_index(self.original.as_str(), end)?;
 
     let start = start as u32;
     let end = end as u32;
+
 
     if start == end {
       return Err(Error::new_with_reason(
@@ -257,21 +326,25 @@ impl MagicString {
       ));
     }
 
+
     self._split_at_index(start)?;
     self._split_at_index(end)?;
+
+
 
     let start_chunk: Option<Rc<RefCell<Chunk>>> = self.chunk_by_start.get(&start).map(Rc::clone);
     let end_chunk: Option<Rc<RefCell<Chunk>>> = self.chunk_by_end.get(&end).map(Rc::clone);
 
     if let Some(start_chunk) = start_chunk {
+
       // Note: This original implementation looks a little bit weird to me.
       // It should check whether the latter chunks had been edited(not only for content-wise, but also for intro and outro) or not,
       // then we could return the Error. But for now, It's been doing just fine.
-      if start_chunk.borrow().end < end
-        && (start_chunk.borrow().next
+      if start_chunk.deref().borrow().end < end
+        && (start_chunk.deref().borrow().next
           != self
             .chunk_by_start
-            .get(&start_chunk.borrow().end)
+            .get(&start_chunk.deref().borrow().end)
             .map(Rc::clone))
       {
         return Err(Error::new_with_reason(
@@ -282,28 +355,29 @@ impl MagicString {
 
       Chunk::try_each_next(Rc::clone(&start_chunk), |chunk| {
         if start_chunk == chunk {
-          start_chunk.borrow_mut().content = content.to_owned();
+          start_chunk.deref().borrow_mut().content = content.to_owned();
           if !content_only {
-            start_chunk.borrow_mut().intro = String::default();
-            start_chunk.borrow_mut().outro = String::default();
+            start_chunk.deref().borrow_mut().intro = String::default();
+            start_chunk.deref().borrow_mut().outro = String::default();
           }
 
           return Ok(false);
         }
 
         if end_chunk.is_some()
-          && chunk.borrow().start
+          && chunk.deref().borrow().start
             >= (end_chunk.as_ref().map(Rc::clone).unwrap() as Rc<RefCell<Chunk>>)
+              .deref()
               .borrow()
               .end
         {
           return Ok(true);
         }
 
-        chunk.borrow_mut().content = String::default();
+        chunk.deref().borrow_mut().content = String::default();
         if !content_only {
-          chunk.borrow_mut().intro = String::default();
-          chunk.borrow_mut().outro = String::default();
+          chunk.deref().borrow_mut().intro = String::default();
+          chunk.deref().borrow_mut().outro = String::default();
         }
 
         Ok(false)
@@ -379,11 +453,11 @@ impl MagicString {
 
     Chunk::try_each_next(Rc::clone(&self.first_chunk), |chunk| {
       self.last_searched_chunk = Rc::clone(&chunk);
-      if let Err(e) = chunk.borrow_mut().trim_start_regexp(pattern) {
+      if let Err(e) = chunk.deref().borrow_mut().trim_start_regexp(pattern) {
         return Err(e);
       }
 
-      Ok(!chunk.borrow().to_string().is_empty())
+      Ok(!chunk.deref().borrow().to_string().is_empty())
     })?;
 
     if error != Error::default() {
@@ -391,7 +465,13 @@ impl MagicString {
     }
 
     if self.last_searched_chunk == self.last_chunk
-      && self.last_chunk.borrow().content.to_string().is_empty()
+      && self
+        .last_chunk
+        .deref()
+        .borrow()
+        .content
+        .to_string()
+        .is_empty()
     {
       self.outro = trim::trim_start_regexp(self.outro.as_str(), pattern)?.to_owned()
     }
@@ -434,15 +514,21 @@ impl MagicString {
 
     Chunk::try_each_prev(Rc::clone(&self.last_chunk), |chunk| {
       self.last_searched_chunk = Rc::clone(&chunk);
-      if let Err(e) = chunk.borrow_mut().trim_end_regexp(pattern) {
+      if let Err(e) = chunk.deref().borrow_mut().trim_end_regexp(pattern) {
         return Err(e);
       }
 
-      Ok(!chunk.borrow().to_string().is_empty())
+      Ok(!chunk.deref().borrow().to_string().is_empty())
     })?;
 
     if self.last_searched_chunk == self.first_chunk
-      && self.first_chunk.borrow().content.to_string().is_empty()
+      && self
+        .first_chunk
+        .deref()
+        .borrow()
+        .content
+        .to_string()
+        .is_empty()
     {
       self.intro = trim::trim_end_regexp(self.intro.as_str(), pattern)?.to_owned()
     }
@@ -488,8 +574,8 @@ impl MagicString {
   ///
   /// ```
   pub fn remove(&mut self, start: i64, end: i64) -> Result<&mut Self> {
-    let start = normalize_index(self.original_str.as_str(), start)?;
-    let end = normalize_index(self.original_str.as_str(), end)?;
+    let start = normalize_index(self.original.as_str(), start)?;
+    let end = normalize_index(self.original.as_str(), end)?;
 
     let start = start as u32;
     let end = end as u32;
@@ -514,15 +600,114 @@ impl MagicString {
 
     if start_chunk.is_some() {
       Chunk::try_each_next(start_chunk.map(Rc::clone).unwrap(), |chunk| {
-        chunk.borrow_mut().content = String::default();
-        chunk.borrow_mut().intro = String::default();
-        chunk.borrow_mut().outro = String::default();
+        chunk.deref().borrow_mut().content = String::default();
+        chunk.deref().borrow_mut().intro = String::default();
+        chunk.deref().borrow_mut().outro = String::default();
 
         Ok(chunk == Rc::clone(end_chunk.unwrap()))
       })?;
     }
 
     Ok(self)
+  }
+
+  /// ## Slice
+  /// Get a slice of the modified string.
+  /// Example:
+  /// ```
+  /// use magic_string::MagicString;
+  /// let mut s = MagicString::new("abcdefghijkl");
+  ///
+  ///
+  /// ```
+  ///
+  pub fn slice(&mut self, start: i64, end: i64) -> Result<String> {
+    let start = normalize_index(self.original.as_str(), start)?;
+    let end = normalize_index(self.original.as_str(), end)?;
+
+    let start = start as u32;
+    let end = end as u32;
+
+    if start > end {
+      return Err(Error::new_with_reason(
+        MagicStringErrorType::MagicStringOutOfRangeError,
+        "Start must be greater than end.",
+      ));
+    }
+
+    let mut result = String::new();
+    let mut chunk = Some(Rc::clone(&self.first_chunk));
+    while let Some(c) = chunk.clone() {
+      if c.deref().borrow().start > start || c.deref().borrow().end <= start {
+        chunk = c.deref().borrow().clone().next;
+      } else {
+        break;
+      }
+    }
+    if let Some(c) = chunk.clone() {
+      if c.deref().borrow().is_content_edited() && c.deref().borrow().start != start {
+        return Err(Error::new_with_reason(
+          MagicStringErrorType::MagicStringUnknownError,
+          "Cannot move a selection inside itself",
+        ));
+      }
+    }
+    let start_chunk = chunk.clone().unwrap();
+    Chunk::try_each_next(Rc::clone(&chunk.unwrap()), |chunk| {
+      let str: &str;
+
+      if chunk.deref().borrow().intro.len() != 0
+        && (start_chunk != chunk || chunk.deref().borrow().start == start)
+      {
+        result.push_str(chunk.deref().borrow().intro.as_str());
+      };
+
+      let contain_end = chunk.deref().borrow().end >= end;
+
+      let slice_start = if chunk.deref().borrow().start < start {
+        start - chunk.deref().borrow().start
+      } else {
+        0
+      };
+      let slice_end = if contain_end {
+        chunk.deref().borrow().content.len() as u32 + end - chunk.deref().borrow().end
+      } else {
+        chunk.deref().borrow().content.len() as u32
+      };
+
+      let chunk_str = chunk.deref().borrow().content.clone();
+
+      if contain_end
+        && chunk.deref().borrow().is_content_edited()
+        && chunk.deref().borrow().end != end
+      {
+        return Err(Error::new_with_reason(
+          MagicStringErrorType::MagicStringUnknownError,
+          "Cannot use replaced character ${end} as slice end anchor.",
+        ));
+      }
+
+      str = &chunk_str.as_str()[slice_start as usize..slice_end as usize];
+      result.push_str(str);
+      if chunk.deref().borrow().outro.len() != 0
+        && (!contain_end || chunk.deref().borrow().end == end)
+      {
+        result.push_str(chunk.deref().borrow().outro.as_str())
+      }
+
+      Ok(chunk.deref().borrow().end >= end)
+    })?;
+
+    Ok(result)
+  }
+
+  pub fn snip(&mut self, start: i64, end: i64) -> Result<MagicString> {
+    let mut clone = self.clone()?;
+    let length = clone.original.len();
+    clone.remove(0, start)?;
+    clone.remove(end, length as i64)?;
+
+    Ok(clone)
   }
 
   /// ## Is empty
@@ -582,7 +767,7 @@ impl MagicString {
     map.advance(self.intro.as_str());
 
     Chunk::try_each_next(Rc::clone(&self.first_chunk), |chunk| {
-      let loc = locator.locate(chunk.borrow().start);
+      let loc = locator.locate(chunk.deref().borrow().start);
       map.add_chunk(Rc::clone(&chunk), loc);
       Ok(false)
     })?;
@@ -597,7 +782,7 @@ impl MagicString {
       names: Vec::default(),
       sources_content: {
         if options.include_content {
-          vec![Some(self.original_str.to_owned())]
+          vec![Some(self.original.to_owned())]
         } else {
           Default::default()
         }
@@ -639,21 +824,30 @@ impl MagicString {
 
     let chunk = Rc::clone(&self.last_searched_chunk);
 
-    let search_forward = index > chunk.borrow().start;
+    let search_forward = index > chunk.deref().borrow().start;
 
     let mut curr = Some(chunk);
     while let Some(c) = curr {
-      if c.borrow().contains(index) {
+
+      if c.deref().borrow().contains(index) {
+
         self._split_chunk_at_index(c, index)?;
         return Ok(());
       } else {
+
         curr = {
           if search_forward {
-            self.chunk_by_start.get(&c.borrow().end).map(Rc::clone)
+            self
+              .chunk_by_start
+              .get(&c.deref().borrow().end)
+              .map(Rc::clone)
           } else {
-            self.chunk_by_end.get(&c.borrow().start).map(Rc::clone)
+            self
+              .chunk_by_end
+              .get(&c.deref().borrow().start)
+              .map(Rc::clone)
           }
-        }
+        };
       }
     }
 
@@ -662,14 +856,14 @@ impl MagicString {
 
   fn _split_chunk_at_index(&mut self, chunk: Rc<RefCell<Chunk>>, index: u32) -> Result {
     // Zero-length edited chunks can be split into different chunks, cause split chunks are the same.
-    if chunk.borrow().is_content_edited() && !chunk.borrow().content.is_empty() {
+    if chunk.deref().borrow().is_content_edited() && !chunk.deref().borrow().content.is_empty() {
       return Err(Error::new(
         MagicStringErrorType::MagicStringDoubleSplitError,
       ));
     }
     let new_chunk = Chunk::split(Rc::clone(&chunk), index);
 
-    let new_chunk_original = new_chunk.borrow();
+    let new_chunk_original = new_chunk.deref().borrow();
     self.chunk_by_end.insert(index, Rc::clone(&chunk));
 
     self.chunk_by_start.insert(index, Rc::clone(&new_chunk));
@@ -704,7 +898,7 @@ impl ToString for MagicString {
     let mut str = self.intro.to_owned();
 
     Chunk::try_each_next(Rc::clone(&self.first_chunk), |chunk| {
-      str = format!("{}{}", str, chunk.borrow().to_string());
+      str = format!("{}{}", str, chunk.deref().borrow().to_string());
       Ok(false)
     })
     .unwrap();
