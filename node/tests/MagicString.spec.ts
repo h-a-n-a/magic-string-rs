@@ -1205,41 +1205,42 @@ describe('slice', () => {
   })
 })
 
-// describe('snip', () => {
-//   it('should return a clone with content outside `start` and `end` removed', () => {
-//     const s = new MagicString('abcdefghijkl', {
-//       filename: 'foo.js',
-//     })
+describe('snip', () => {
+  it('should return a clone with content outside `start` and `end` removed', () => {
+    /* const s = new MagicString('abcdefghijkl', {
+      filename: 'foo.js',
+    }) */
+    const s = new MagicString('abcdefghijkl')
 
-//     s.overwrite(6, 9, 'GHI')
+    s.overwrite(6, 9, 'GHI')
 
-//     const snippet = s.snip(3, 9)
-//     assert.equal(snippet.toString(), 'defGHI')
-//     assert.equal(snippet.filename, 'foo.js')
-//   })
+    const snippet = s.snip(3, 9)
+    assert.equal(snippet.toString(), 'defGHI')
+    // assert.equal(snippet.filename, 'foo.js')
+  })
 
-//   it('should snip from the start', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     const snippet = s.snip(0, 6)
+  it('should snip from the start', () => {
+    const s = new MagicString('abcdefghijkl')
+    const snippet = s.snip(0, 6)
 
-//     assert.equal(snippet.toString(), 'abcdef')
-//   })
+    assert.equal(snippet.toString(), 'abcdef')
+  })
 
-//   it('should snip from the end', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     const snippet = s.snip(6, 12)
+  it('should snip from the end', () => {
+    const s = new MagicString('abcdefghijkl')
+    const snippet = s.snip(6, 12)
 
-//     assert.equal(snippet.toString(), 'ghijkl')
-//   })
+    assert.equal(snippet.toString(), 'ghijkl')
+  })
 
-//   it('should respect original indices', () => {
-//     const s = new MagicString('abcdefghijkl')
-//     const snippet = s.snip(3, 9)
+  it('should respect original indices', () => {
+    const s = new MagicString('abcdefghijkl')
+    const snippet = s.snip(3, 9)
 
-//     snippet.overwrite(6, 9, 'GHI')
-//     assert.equal(snippet.toString(), 'defGHI')
-//   })
-// })
+    snippet.overwrite(6, 9, 'GHI')
+    assert.equal(snippet.toString(), 'defGHI')
+  })
+})
 
 describe('trim', () => {
   it('should trim original content', () => {

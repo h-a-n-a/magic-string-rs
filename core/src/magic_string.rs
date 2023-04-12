@@ -67,7 +67,7 @@ pub struct DecodedMap {
 
 #[derive(Debug, Clone)]
 pub struct MagicString {
-  original_str: String,
+  pub original: String,
   original_str_locator: Locator,
 
   intro: String,
@@ -98,7 +98,7 @@ impl MagicString {
     let original_chunk = Rc::new(RefCell::new(Chunk::new(0u32, str.len() as u32, str)));
 
     MagicString {
-      original_str: String::from(str),
+      original: String::from(str),
 
       intro: String::default(),
       outro: String::default(),
@@ -220,7 +220,7 @@ impl MagicString {
   }
 
   pub fn clone(&self) -> Result<MagicString> {
-    let mut cloned = MagicString::new(self.original_str.borrow());
+    let mut cloned = MagicString::new(self.original.borrow());
 
     let mut original_chunk = Rc::clone(&self.first_chunk);
     let mut cloned_chunk = Rc::new(RefCell::new(original_chunk.deref().borrow().clone()));
@@ -305,8 +305,8 @@ impl MagicString {
   ) -> Result<&mut Self> {
 
     let content_only = options.content_only;
-    let start = normalize_index(self.original_str.as_str(), start)?;
-    let end = normalize_index(self.original_str.as_str(), end)?;
+    let start = normalize_index(self.original.as_str(), start)?;
+    let end = normalize_index(self.original.as_str(), end)?;
 
     let start = start as u32;
     let end = end as u32;
@@ -574,8 +574,8 @@ impl MagicString {
   ///
   /// ```
   pub fn remove(&mut self, start: i64, end: i64) -> Result<&mut Self> {
-    let start = normalize_index(self.original_str.as_str(), start)?;
-    let end = normalize_index(self.original_str.as_str(), end)?;
+    let start = normalize_index(self.original.as_str(), start)?;
+    let end = normalize_index(self.original.as_str(), end)?;
 
     let start = start as u32;
     let end = end as u32;
@@ -622,8 +622,8 @@ impl MagicString {
   /// ```
   ///
   pub fn slice(&mut self, start: i64, end: i64) -> Result<String> {
-    let start = normalize_index(self.original_str.as_str(), start)?;
-    let end = normalize_index(self.original_str.as_str(), end)?;
+    let start = normalize_index(self.original.as_str(), start)?;
+    let end = normalize_index(self.original.as_str(), end)?;
 
     let start = start as u32;
     let end = end as u32;
@@ -700,6 +700,16 @@ impl MagicString {
 
     Ok(result)
   }
+
+  pub fn snip(&mut self, start: i64, end: i64) -> Result<MagicString> {
+    let mut clone = self.clone()?;
+    let length = clone.original.len();
+    clone.remove(0, start)?;
+    clone.remove(end, length as i64)?;
+
+    Ok(clone)
+  }
+
   /// ## Is empty
   ///
   /// Returns `true` if the resulting source is empty (disregarding white space).
@@ -772,7 +782,7 @@ impl MagicString {
       names: Vec::default(),
       sources_content: {
         if options.include_content {
-          vec![Some(self.original_str.to_owned())]
+          vec![Some(self.original.to_owned())]
         } else {
           Default::default()
         }

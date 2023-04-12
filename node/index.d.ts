@@ -32,6 +32,7 @@ export interface OverwriteOptions {
 }
 export class MagicString {
   constructor(originalStr: string)
+  get original(): string
   append(input: string): this
   prepend(input: string): this
   appendLeft(index: number, input: string): this
@@ -39,6 +40,7 @@ export class MagicString {
   prependLeft(index: number, input: string): this
   prependRight(index: number, input: string): this
   clone(): MagicString
+  snip(start: number, end: number): MagicString
   overwrite(
     start: number,
     end: number,

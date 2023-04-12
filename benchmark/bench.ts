@@ -161,3 +161,31 @@ b.suite(
     b.cycle(),
     b.complete(),
 )
+
+b.suite(
+    'clone',
+    b.add('MagicString', () => {
+        const m = new MagicString(`export const foo = 'bar'`)
+        m.clone()
+    }),
+    b.add('MagicStringRust', () => {
+        const m = new MagicStringRust(`export const foo = 'bar'`)
+        m.clone()
+    }),
+    b.cycle(),
+    b.complete(),
+)
+
+b.suite(
+    'snip',
+    b.add('MagicString', () => {
+        const m = new MagicString(`export const foo = 'bar'`)
+        m.snip(3, 9)
+    }),
+    b.add('MagicStringRust', () => {
+        const m = new MagicStringRust(`export const foo = 'bar'`)
+        m.snip(3, 9)
+    }),
+    b.cycle(),
+    b.complete(),
+)
