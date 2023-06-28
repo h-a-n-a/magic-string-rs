@@ -105,6 +105,11 @@ impl MagicString {
   }
 
   #[napi]
+  pub fn _move(&mut self, start: i64, end: i64, index: i64) -> Result<&Self> {
+    self.0._move(start, end, index)?;
+    Ok(self)
+  }
+  #[napi]
   pub fn is_empty(&self) -> Result<bool> {
     Ok(self.0.is_empty())
   }
