@@ -149,6 +149,8 @@ pub mod trim {
 
 use crate::{Error, MagicStringErrorType, Result};
 
+use regex::Regex;
+
 pub fn normalize_index(s: &str, index: i64) -> Result<usize> {
   let len = s.len() as i64;
 
@@ -162,4 +164,43 @@ pub fn normalize_index(s: &str, index: i64) -> Result<usize> {
   }
 
   Ok(index as usize)
+}
+
+pub fn guess_indent(str: &str) -> Result<String> {
+  let lines: Vec<&str> = str.split('\n').collect();
+
+  let tab_pattern = Regex::new(r"^\t+")?;
+  let space_pattern = Regex::new(r"^ {2,}")?;
+
+  let spaced = lines
+    .clone()
+    .into_iter()
+    .filter(|line| space_pattern.is_match(line))
+    .collect::<Vec<&str>>();
+  let tabbed = lines
+    .clone()
+    .into_iter()
+    .filter(|line| tab_pattern.is_match(line))
+    .collect::<Vec<&str>>();
+
+  if tabbed.len() == 0 && spaced.len() == 0 || tabbed.len() > spaced.len() {
+    return Ok("\t".to_string());
+  }
+
+  let mut min: usize = 2 ^ 32;
+  for space_line in spaced {
+    let mut space_count = 0;
+    for c in space_line.chars() {
+      if c == ' ' {
+        space_count += 1;
+      } else {
+        break;
+      }
+    }
+
+    if space_count < min {
+      min = space_count
+    }
+  }
+  Ok(" ".repeat(min).to_string())
 }
