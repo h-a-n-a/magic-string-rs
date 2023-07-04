@@ -379,9 +379,7 @@ impl MagicString {
 
     Chunk::try_each_next(Rc::clone(&self.first_chunk), |chunk| {
       self.last_searched_chunk = Rc::clone(&chunk);
-      if let Err(e) = chunk.borrow_mut().trim_start_regexp(pattern) {
-        return Err(e);
-      }
+      chunk.borrow_mut().trim_start_regexp(pattern)?;
 
       Ok(!chunk.borrow().to_string().is_empty())
     })?;
@@ -434,9 +432,7 @@ impl MagicString {
 
     Chunk::try_each_prev(Rc::clone(&self.last_chunk), |chunk| {
       self.last_searched_chunk = Rc::clone(&chunk);
-      if let Err(e) = chunk.borrow_mut().trim_end_regexp(pattern) {
-        return Err(e);
-      }
+      chunk.borrow_mut().trim_end_regexp(pattern)?;
 
       Ok(!chunk.borrow().to_string().is_empty())
     })?;
